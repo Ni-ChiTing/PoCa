@@ -23,28 +23,16 @@ public class GameScene : MonoBehaviour
         player_name[1].text = Data.Player3;
         player_name[2].text = Data.Player4;
 
+
         //設定人數
-        int player_number = Data.PlayerCardNumber;
-        for (int i = player_number; i < 4; i++) {
+        int player_number = Data.PlayerNumber-1;
+        for (int i = 0; i < player_number; i++) {
+            player_modal[i].SetActive(true);
+        }
+        for (int i = player_number; i < 3; i++) {
             player_modal[i].SetActive(false);
             player_name[i].text = "";
         }
 
-        // 設定host可按按鈕 其他人不行     
-        if (Data.IamHost == false)
-        {
-            Debug.Log(Data.IamHost);
-            GameObject.Find("Canvas/nameBtn").GetComponent<nextPlayerCon>().enabled = false;
-        }
-        else {
-
-        }
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

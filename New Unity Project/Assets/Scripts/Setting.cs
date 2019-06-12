@@ -18,9 +18,9 @@ public class Setting : MonoBehaviour
   
     public void Start()
     {
-        //player2 = 
-        //player3 =
-        //player4 =
+        player2 = GameObject.Find("Canvas/conn/connect1/Text").GetComponent<Text>();
+        player3 = GameObject.Find("Canvas/conn/connect2/Text").GetComponent<Text>();
+        player4 = GameObject.Find("Canvas/conn/connect3/Text").GetComponent<Text>();
         game_name = GameObject.Find("Canvas/set/bg/game/Dropdown/Label").GetComponent<Text>();
         player_number = GameObject.Find("Canvas/set/bg/set/PlayerNumDropDown/Label").GetComponent<Text>();
         player_card_number = GameObject.Find("Canvas/set/bg/set/PlayerCardInputField/Text").GetComponent<Text>();
@@ -30,9 +30,9 @@ public class Setting : MonoBehaviour
     }
     public void startBtn()
     {
-        //Data.Player2 =
-        //Data.Player3 = 
-        //Data.Player4 =
+        Data.Player2 = player2.text;
+        Data.Player3 = player3.text;
+        Data.Player4 = player4.text;
         Data.GameName = game_name.text;
         Data.PlayerNumber = int.Parse(player_number.text);
         Data.PlayerCardNumber = int.Parse(player_card_number.text);

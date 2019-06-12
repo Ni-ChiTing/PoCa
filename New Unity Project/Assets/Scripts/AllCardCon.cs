@@ -39,11 +39,24 @@ public class AllCardCon : MonoBehaviour
 
     void Start() {
         askUI.SetActive(false);
-
-        Give(0, new int[] { 0, 1, 2});
-        Give(1, new int[] { 3, 4, 5, 6});
-        Give(2, new int[] { 7, 8});
-        Give(3, new int[] { 9});
+        int []card = new int[52];
+        Random rand = new Random();
+        int iTarget = 0, iCardTemp = 0;
+        for (int i = 0; i < 52; i++)
+            card[i] = i;
+        for (int i = 0; i < 52; i++) {
+            iTarget = UnityEngine.Random.Range(0, 52);
+            iCardTemp = card[i];
+            card[i] = card[iTarget];
+            card[iTarget] = iCardTemp;
+        }
+        for (int i = 0; i < Data.PlayerNumber; i++)
+        {
+            for(int j=0; j< Data.PlayerCardNumber; j++) {
+                Give(i, new int[] { card[j+i*Data.PlayerCardNumber] });
+                Debug.Log("person:"+i+" "+card[j + i * Data.PlayerCardNumber]);
+            }
+        }
     }
 
     void Update()
@@ -73,7 +86,7 @@ public class AllCardCon : MonoBehaviour
                     {
                         string hitTag = hit.transform.tag;
                         //click the card(take it)
-                        if (string.Equals(hitTag, "Card"))
+                        if (string.Equals(hitTag, "Card") && Data.NeedDrawCard == true)
                         {
                             int oldParent = cardCons[dragingCard].getParent();
                             if (hit.collider.GetComponent<CardControl>().cardId == dragingCard)
