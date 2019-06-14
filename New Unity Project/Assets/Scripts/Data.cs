@@ -9,6 +9,7 @@ public static class Data
     public static bool IamHost = true;
 
     // Scene setting
+    public static string HostName = "ss";
     public static string Player2 = "Player2";
     public static string Player3 = "Player3";
     public static string Player4 = "Player4";
