@@ -20,26 +20,26 @@ public class Setting : MonoBehaviour
     Text table_card_number;
     Toggle need_animation;
     Toggle need_draw_card;
-    ushort maxpacketsize = 10000;
-    int broadcastPort = 47777;
-    int broadcastKey = 1000;
-    int broadcastVersion = 1;
-    int broadcastSubVersion = 1;
+    static GameObject Messagebox;
 
     string broadcastData = "HELLO";
     private static Socket sock;
     private static IPEndPoint iep1;
     private static byte[] data;
     private Thread t;
-
+    /*
     public int udpPort = 9050;
+    UdpClient client;
+
 
     public void BroadcastIP()
     {
-        sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        //sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        client = new UdpClient(new IPEndPoint(IPAddress.Any, udpPort));
         iep1 = new IPEndPoint(IPAddress.Broadcast, udpPort);
+
         data = Encoding.ASCII.GetBytes(Data.HostIP);
-        sock.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+
         t = new Thread(BroadcastMessage);
         t.Start();
     }
@@ -47,11 +47,11 @@ public class Setting : MonoBehaviour
     {
         while (true)
         {
-            sock.SendTo(data, iep1);
-            Debug.Log("Broadcast");
-            Thread.Sleep(3000);
+            client.Send(data, data.Length, iep1);
+            Debug.Log("send broadcast");
+            Thread.Sleep(1000);
         }
-    }
+    }*/
     public void Start()
     {
         /*
@@ -64,7 +64,17 @@ public class Setting : MonoBehaviour
         NetworkTransport.Init(globalconfig);
         broadcastData = "NetworkManager:" + I + ":" + NetworkManager.singleton.networkPort;
         */
-        BroadcastIP();
+        //BroadcastIP();
+
+        //Create UDP Client for broadcasting the server
+        string hostName = System.Net.Dns.GetHostName();
+        string localIP = System.Net.Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        Debug.Log(hostName);
+        for (int i = 0; i < Dns.GetHostEntry(hostName).AddressList.Length ; i++)
+        {
+            Debug.Log(Dns.GetHostEntry(hostName).AddressList[i].ToString());
+        }
+        
         player2 = GameObject.Find("Canvas/conn/connect1/Text").GetComponent<Text>();
         player3 = GameObject.Find("Canvas/conn/connect2/Text").GetComponent<Text>();
         player4 = GameObject.Find("Canvas/conn/connect3/Text").GetComponent<Text>();
@@ -77,18 +87,50 @@ public class Setting : MonoBehaviour
     }
     public void startBtn()
     {
-        Data.players.Add ( player2.text);
+        int temp;
+        Data.players.Add(player2.text);
         Data.players.Add(player3.text);
         Data.players.Add(player4.text);
         Data.GameName = game_name.text;
         Data.PlayerNumber = int.Parse(player_number.text);
-        Data.PlayerCardNumber = int.Parse(player_card_number.text);
-        Data.TableCardNumber = int.Parse(table_card_number.text);
         if (need_animation.isOn == true) Data.NeedAnimation = true;
         else Data.NeedAnimation = false;
         if (need_draw_card.isOn == true) Data.NeedDrawCard = true;
         else Data.NeedDrawCard = false;
-
-        SceneManager.LoadScene(2);
+        if (int.TryParse(player_card_number.text,out temp) == false)
+        {
+            ShowDia("warning", "Player card number need number !!");
+        }
+        else
+        {
+            Data.PlayerCardNumber = int.Parse(player_card_number.text);
+            if (int.TryParse(table_card_number.text, out temp) == false)
+            {
+                ShowDia("warning", "Table card number need number !!");
+            }
+            else
+            {
+                Data.TableCardNumber = int.Parse(table_card_number.text);
+                SceneManager.LoadScene(2);
+            }
+        }        
+        
+    }
+    public void ShowDia(string title,string context)
+    {
+        Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox");
+        Messagebox = GameObject.Instantiate(Messagebox, GameObject.Find("Canvas").transform) as GameObject;
+        Messagebox.transform.localScale = new Vector3(1, 1, 1);
+        Messagebox.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+        Messagebox.GetComponent<RectTransform>().offsetMin = Vector2.zero;
+        Messagebox.GetComponent<RectTransform>().offsetMax = Vector2.zero;
+        Messagebox.GetComponent<MessageBoxControll>().Content.text = context;
+        Messagebox.GetComponent<MessageBoxControll>().Title.text = title;
+        Messagebox.GetComponent<MessageBoxControll>().Close.onClick.AddListener(Close_btn);
+        Messagebox.GetComponent<MessageBoxControll>().Confirm.onClick.AddListener(Close_btn);
+    }
+    public void Close_btn()
+    {
+        GameObject.Destroy(Messagebox);
     }
 }

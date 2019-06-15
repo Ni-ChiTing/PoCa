@@ -13,7 +13,6 @@ public class StartScene : MonoBehaviour
     AndroidJavaObject _ajc;
     public void ClientBtn() {
         Data.IamHost = false;
-        bool success3 = isWifiApEnabled();
         if (string.IsNullOrEmpty(Name.text)){
             
             Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox");
