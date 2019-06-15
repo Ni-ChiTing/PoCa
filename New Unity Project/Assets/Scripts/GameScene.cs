@@ -19,9 +19,10 @@ public class GameScene : MonoBehaviour
         player_name[0] = GameObject.Find("Canvas/P2").GetComponent<Text>();
         player_name[1] = GameObject.Find("Canvas/P3").GetComponent<Text>();
         player_name[2] = GameObject.Find("Canvas/P4").GetComponent<Text>();
-        player_name[0].text = Data.Player2;
-        player_name[1].text = Data.Player3;
-        player_name[2].text = Data.Player4;
+        int j = 0;
+        foreach ( var name in Data.players){
+            player_name[j].text = name;
+        }
 
 
         //設定人數

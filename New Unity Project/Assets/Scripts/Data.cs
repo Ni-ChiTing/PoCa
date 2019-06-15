@@ -6,13 +6,12 @@ public static class Data
 {
     // Scene start
     public static string MyName;
-    public static bool IamHost = true;
+    public static bool IamHost = false;
+    public static string HostIP = "";
 
     // Scene setting
     public static string HostName = "ss";
-    public static string Player2 = "Player2";
-    public static string Player3 = "Player3";
-    public static string Player4 = "Player4";
+    public static List<string> players = new List<string>();
     public static string GameName;
     public static int PlayerNumber = 3;
     public static int PlayerCardNumber = 5;

@@ -63,6 +63,9 @@ public class StartScene : MonoBehaviour
             }
             else
             {
+                string ip = _ajc.Call<string>("GetIP");
+                bool success2 = _ajc.Call<bool>("showToast", ip);
+                Data.HostIP = ip;
                 SceneManager.LoadScene(1);
             }
             
@@ -92,9 +95,11 @@ public class StartScene : MonoBehaviour
         }
         else{
             bool success = _ajc.Call<bool>("CheckWifiAP");
-            bool success2 = _ajc.Call<bool>("showToast", success.ToString());
+            //bool success2 = _ajc.Call<bool>("showToast", success.ToString());
             if (success){
                 Data.MyName = Name.text;
+                string ip = _ajc.Call<string>("GetIP");
+                bool success2 = _ajc.Call<bool>("showToast", ip);
                 SceneManager.LoadScene(3);
             }
             else
