@@ -96,11 +96,6 @@ public class UnityFuntion {
         return true;
     }
     public String GetIP(){
-//        WifiManager wm = (WifiManager)  getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-//        WifiInfo wifiInf = wm.getConnectionInfo();
-//        int ipAddress = wifiInf.getIpAddress();
-//        String ip = String.format("%d.%d.%d.%d", (ipAddress & 0xff),(ipAddress >> 8 & 0xff),(ipAddress >> 16 & 0xff),(ipAddress >> 24 & 0xff));
-//        return ip;
         String ip = "";
         try {
             Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface
@@ -125,5 +120,35 @@ public class UnityFuntion {
             ip += "Something Wrong! " + e.toString() + "\n";
         }
         return ip;
+    }
+    public String startPingService(String subnet)
+    {
+        String IPs= "";
+        try {
+
+            WifiManager mWifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiInfo mWifiInfo = mWifiManager.getConnectionInfo();
+
+            Thread t;
+            for (int i=1;i<255;i++){
+                String host = subnet + "." + i;
+                if (InetAddress.getByName(host).isReachable(100)){
+
+                    Log.w("DeviceDiscovery", "Reachable Host: " + String.valueOf(host) +" is reachable!");
+                    IPs += host +',';
+                }
+                else
+                {
+                    Log.e("DeviceDiscovery", "Not Reachable Host: " + String.valueOf(host));
+
+                }
+            }
+
+
+        }
+        catch(Exception e){
+            //System.out.println(e);
+        }
+        return  IPs;
     }
 }
