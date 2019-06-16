@@ -502,10 +502,7 @@ public class GameServerControll : MonoBehaviour
     }
     public void send_click()  // TEST FUNTION
     {
-        string hand = WrapHandCardToString(Data.players[0]);
-        print(hand);
-        UnwrapAndSetHandCard(hand);
-        SsendStr = "AAAddd";
+        SsendStr = "fghfghgh";
         ServerSendClient(SsendStr);
     }
     // Update is called once per frame
