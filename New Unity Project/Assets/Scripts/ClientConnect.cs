@@ -129,6 +129,7 @@ public class ClientConnect : MonoBehaviour
         string data = clientEnd.ToString();
         string[] realip = data.Split(':');
         Data.HostIP = realip[0];
+        print("host IP = "+ Data.HostIP);
         recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
         print(recvStr);
         sendStr = Data.MyName;

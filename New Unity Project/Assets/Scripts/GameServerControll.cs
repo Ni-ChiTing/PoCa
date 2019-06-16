@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -8,16 +9,27 @@ using UnityEngine;
 
 public class GameServerControll : MonoBehaviour
 {
-    Socket socket; //socket
-    EndPoint clientEnd; //client
-    IPEndPoint ipEnd; //port
-    string recvStr; //receive string
-    byte[] recvData = new byte[1024]; //byte recieve
+    Socket Ssocket; //socket
+    EndPoint SclientEnd; //client
+    IPEndPoint SipEnd; //port
+    string SrecvStr; //receive string
+    string SsendStr;
+    byte[] SrecvData = new byte[1024]; //byte recieve
+    byte[] SsendData = new byte[1024];
+    int SrecvLen;
+    Thread SconnectThread;
+    int UdpPort = 10231;
+
+    Socket socket;
+    EndPoint serverEnd;
+    IPEndPoint ipEnd;
+    string recvStr;
+    string sendStr;
+    byte[] recvData = new byte[1024];
     byte[] sendData = new byte[1024];
     int recvLen;
     Thread connectThread;
-    int UdpPort = 10231;
-    EndPoint serverEnd;
+
     const string TakeCard_ = "T";
     const string AddCardFromTable_ = "A";
     const string DiscardCard_ = "D";
@@ -32,86 +44,83 @@ public class GameServerControll : MonoBehaviour
     // S 黑桃 H 愛心 DI 方塊 C 梅花
     void InitServerSocket()
     {
-        ipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        socket.Bind(ipEnd);
+        SipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
+        Ssocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        Ssocket.Bind(SipEnd);
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        clientEnd = (EndPoint)sender;
-        print("Server waiting for UDP dgram");
-        connectThread = new Thread(new ThreadStart(ServerListenClient));
-        connectThread.Start();
+        SclientEnd = new IPEndPoint(IPAddress.Parse(Data.playerIP[1]), 0);
+        print("waiting for UDP dgram");
+        SconnectThread = new Thread(new ThreadStart(ServerListenClient));
+        SconnectThread.Start();
     }
-    public void ServerSendClient(string sendStr) //default send player 1 use SetClient To Change 
+    public void ServerSendClient(string SsendStr) //default send player 1 use SetClient To Change 
     {
-        sendData = new byte[1024];
-        sendData = Encoding.ASCII.GetBytes(sendStr);
-        socket.SendTo(sendData, sendData.Length, SocketFlags.None, clientEnd);
+        SsendData = new byte[1024];
+        SsendData = Encoding.ASCII.GetBytes(SsendStr);
+        Ssocket.SendTo(SsendData, SsendData.Length, SocketFlags.None, SclientEnd);
     }
     public void ServerSendAllClient(string sendStr) //Send All Client but not test 
     {
-        sendData = new byte[1024];
-        sendData = Encoding.ASCII.GetBytes(sendStr);
+        SsendData = new byte[1024];
+        SsendData = Encoding.ASCII.GetBytes(sendStr);
         EndPoint clientEnds = new IPEndPoint(IPAddress.Any, 0);
-        socket.SendTo(sendData, sendData.Length, SocketFlags.None, clientEnds);
+        Ssocket.SendTo(SsendData, SsendData.Length, SocketFlags.None, clientEnds);
     }
-    public int CardNameToIndex(string card) //將 card 從 string 表示轉乘 int
-    {
-        string[] sp = card.Split(',');
-        int num = int.Parse(sp[1]);
-        if (sp[0] == Spade)
-        {
-            num = (num - 1) * 4 + 3;
-        }
-        else if (sp[0] == Diamond)
-        {
-            num = (num - 1) * 4 + 1;
-        }
-        else if (sp[0] == Heart)
-        {
-            num = (num - 1) * 4 + 2;
-        }
-        else if (sp[0] == Club)
-        {
-            num = (num - 1) * 4 ;
-        }
-        return num;
-    }
-    public string CardIndexToName(int cardindex) //將 card 從 int 表示轉成 string
-    {
-        string r = "";
-        if (cardindex % 4 == 0)
-        {
-            r = Club + "," + ((cardindex/4) + 1);
-        }
-        else if (cardindex % 4 == 1)
-        {
-            r = Diamond + "," + ((cardindex / 4) + 1);
-        }
-        else if (cardindex % 4 == 2)
-        {
-            r = Heart + "," + ((cardindex / 4) + 1);
-        }
-        else if (cardindex % 4 == 3)
-        {
-            r = Spade + "," + ((cardindex / 4) + 1);
-        }
-        return r;
-    }
+   
     public void SetClientSend(string IP) // change to send other player
     {
-        clientEnd = new IPEndPoint(IPAddress.Parse(IP), 0);
+        SclientEnd = new IPEndPoint(IPAddress.Parse(IP), 0);
         
     }
     void ServerListenClient()
     {
         while (true)
         {   
+            SrecvData = new byte[1024];
+            SrecvLen = Ssocket.ReceiveFrom(SrecvData, ref SclientEnd);
+            print("message from: " + SclientEnd.ToString());
+            SrecvStr = Encoding.ASCII.GetString(SrecvData, 0, SrecvLen);
+            print(SrecvStr);
+            SsendStr
+                = "From Server: " + SrecvStr;
+            ServerSendClient(SsendStr);
+        }
+    }
+    
+    void InitClientSocket()
+    {
+        ipEnd = new IPEndPoint(IPAddress.Parse(Data.HostIP), UdpPort);
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+        serverEnd = (EndPoint)sender;
+        print("waiting for sending UDP dgram");
+        ClientSendServer("hello");
+        connectThread = new Thread(new ThreadStart(ClientReceiveServer));
+        connectThread.Start();
+    }
+    public void ClientSendServer(string s)
+    {
+        sendData = new byte[1024];
+        sendData = Encoding.ASCII.GetBytes(s);
+        socket.SendTo(sendData, sendData.Length, SocketFlags.None, ipEnd);
+    }
+    public void ClientReceiveServer()
+    {
+        while (true)
+        {
+            /*
             recvData = new byte[1024];
-            recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
-            print("message from: " + clientEnd.ToString());
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            print("message from: " + serverEnd.ToString());
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            print(recvStr);*/
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            print("message from: " + serverEnd.ToString()); 
             recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
             print(recvStr);
         }
+        
     }
     public void UnwrapAndSetHandCard(string r)
     {
@@ -119,7 +128,7 @@ public class GameServerControll : MonoBehaviour
         int index = Data.players.IndexOf(sp[0]);
         if (index == -1)
         {
-            print( "None Find");
+            print("None Find");
         }
         else
         {
@@ -155,8 +164,51 @@ public class GameServerControll : MonoBehaviour
                     Data.PlayerThreeCard.Add(int.Parse(sp[i]));
                 }
             }
-            
+
         }
+    }
+    public int CardNameToIndex(string card) //將 card 從 string 表示轉乘 int
+    {
+        string[] sp = card.Split(',');
+        int num = int.Parse(sp[1]);
+        if (sp[0] == Spade)
+        {
+            num = (num - 1) * 4 + 3;
+        }
+        else if (sp[0] == Diamond)
+        {
+            num = (num - 1) * 4 + 1;
+        }
+        else if (sp[0] == Heart)
+        {
+            num = (num - 1) * 4 + 2;
+        }
+        else if (sp[0] == Club)
+        {
+            num = (num - 1) * 4;
+        }
+        return num;
+    }
+    public string CardIndexToName(int cardindex) //將 card 從 int 表示轉成 string
+    {
+        string r = "";
+        if (cardindex % 4 == 0)
+        {
+            r = Club + "," + ((cardindex / 4) + 1);
+        }
+        else if (cardindex % 4 == 1)
+        {
+            r = Diamond + "," + ((cardindex / 4) + 1);
+        }
+        else if (cardindex % 4 == 2)
+        {
+            r = Heart + "," + ((cardindex / 4) + 1);
+        }
+        else if (cardindex % 4 == 3)
+        {
+            r = Spade + "," + ((cardindex / 4) + 1);
+        }
+        return r;
     }
     public string WrapHandCardToString(string Name) // Wrap Hand Card To String 以利server 發送
     {
@@ -169,18 +221,18 @@ public class GameServerControll : MonoBehaviour
         {
             string r = Name + ",";
             if (index == 0)
-            { 
-               for(int i = 0; i< Data.PlayerHostCard.Count;++i)
-               {
-                  if ( i == Data.PlayerHostCard.Count -1)
-                  {
+            {
+                for (int i = 0; i < Data.PlayerHostCard.Count; ++i)
+                {
+                    if (i == Data.PlayerHostCard.Count - 1)
+                    {
                         r = r + i.ToString();
-                  } 
-                  else
+                    }
+                    else
                     {
                         r = r + i.ToString() + ",";
                     }
-               }
+                }
             }
             else if (index == 1)
             {
@@ -232,7 +284,7 @@ public class GameServerControll : MonoBehaviour
         string[] r = recv.Split(',');
         for (int i = 0; i < r.Length; ++i)
         {
-            if (i == 0 )
+            if (i == 0)
             {
                 if (r[i] == DiscardCard_)
                 {
@@ -257,7 +309,7 @@ public class GameServerControll : MonoBehaviour
     }
     public string FindClientIP(string name)
     {
-        int index =  Data.players.IndexOf(name);
+        int index = Data.players.IndexOf(name);
         if (index == -1)
         {
             return "None Find";
@@ -266,36 +318,6 @@ public class GameServerControll : MonoBehaviour
         {
             return Data.playerIP[index];
         }
-    }
-    void InitClientSocket()
-    {
-        ipEnd = new IPEndPoint(IPAddress.Parse(Data.HostIP), UdpPort);
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        socket.ReceiveTimeout = 1000;
-        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        serverEnd = (EndPoint)sender;
-        print("Client waiting for sending UDP dgram");
-        connectThread = new Thread(new ThreadStart(ClientReceiveServer));
-        connectThread.Start();
-    }
-    public void ClientSendServer(string s)
-    {
-        sendData = new byte[1024];
-        sendData = Encoding.ASCII.GetBytes(s);
-        socket.SendTo(sendData, sendData.Length, SocketFlags.None, ipEnd);
-    }
-    public void ClientReceiveServer()
-    {
-        while (true)
-        {
-            recvData = new byte[1024];
-            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
-            print("message from: " + serverEnd.ToString());
-            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
-            print(recvStr);
-            ResolveMSG(recvStr);
-        }
-        
     }
     public void ClearAllCard() // Clear each player's card 
     {
@@ -306,7 +328,7 @@ public class GameServerControll : MonoBehaviour
     }
     public void SetInitCard()
     {
-        Random rand = new Random();
+        System.Random rand = new System.Random();
         for (int i = 0; i < 52; ++i)
             Data.Cards[i] = i;
         for (int i = 0; i < 52; i++)
@@ -462,24 +484,28 @@ public class GameServerControll : MonoBehaviour
         if (Data.IamHost)
         {
             ClearAllCard();
-            //PrintAllHandCard();
+            PrintAllHandCard();
             SetInitCard();
             PrintAllHandCard();
             InitServerSocket();
-            ServerSendClient("haha");
-            //string hand = WrapHandCardToString(Data.players[0]);
-            //hand = GetNowHandCard_ + "," + hand;
-            //SetClientSend(Data.playerIP[1]);
-            //ServerSendClient(hand);
+            string hand = WrapHandCardToString(Data.players[0]);
+            hand = GetNowHandCard_ + "," + hand;
+            SetClientSend(Data.playerIP[1]);
+            ServerSendClient(hand);
         }
         else
         {
+            
             InitClientSocket();
             ClientSendServer("AAAA");
         }
         PrintAllHandCard();
     }
-
+    public void send_click()  // TEST FUNTION
+    {
+        SsendStr = "AAAddd";
+        ServerSendClient(SsendStr);
+    }
     // Update is called once per frame
     void Update()
     {
