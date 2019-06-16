@@ -6,167 +6,187 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ClientConnect : MonoBehaviour
 {
     public Text WaitText;
-    // Start is called before the first frame update
-    /*
-    byte[] data;
-    string Error_Message;
-
-    private Thread t;
-    public int udpPort = 9050;
-    private void GetSeverIP()
-    {
-        try
-        {
-            t = new Thread(Receive);
-            Debug.Log("Start listen");
-            t.IsBackground = true;
-            t.Start();
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("錯誤信息：" + e.Message);
-        }
-    }
-    Socket sock;
-    private void Receive()
-    {
-            Debug.Log("Wait Data");
-            sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint iep = new IPEndPoint(IPAddress.Any, udpPort);
-            sock.Bind(iep);
-            EndPoint ep = (EndPoint)iep;
-
-            byte[] data = new byte[1024];
-            int recv = sock.ReceiveFrom(data, ref ep);
-            string stringData = Encoding.ASCII.GetString(data, 0, recv);
-
-            Debug.Log(String.Format("received: {0} from: {1}", stringData, ep.ToString()));
-            Thread.Sleep(200);
-
-        sock.Close();
-    }
     
-    private Socket ServerSocket;
-    private IPEndPoint Clients;
-    private IPEndPoint Server;
-    private EndPoint epSender;
-    private byte[] SendData = new byte[1024];
-    public int udpPort = 9050;
-    //接受数据的字符数组
-    private byte[] ReceiveData = new byte[1024];
-
-
-    // Use this for initialization
-    void Start()
-    {
-        //服务器Socket对象实例化
-        ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-        //服务器的IP和端口
-        Server = new IPEndPoint(IPAddress.Any, udpPort);
-
-        //Socket对象跟服务器端的IP和端口绑定
-        ServerSocket.Bind(Server);
-
-        //客户端的IP和端口，端口 0 表示任意端口
-        Clients = new IPEndPoint(IPAddress.Any, 0);
-
-        //实例化客户端 终点
-        epSender = (EndPoint)Clients;
-        ServerSocket.BeginReceiveFrom(ReceiveData, 0, ReceiveData.Length, SocketFlags.None, ref epSender, new AsyncCallback(ReceiveFromClients), epSender);
-        Debug.Log("Start");
-    }
-
-    /// <summary>
-    /// 异步接受，处理数据
-    /// </summary>
-    /// <param name="iar"></param>
-    private void ReceiveFromClients(IAsyncResult iar)
-    { 
-        int reve = ServerSocket.EndReceiveFrom(iar, ref epSender);
-        string str = System.Text.Encoding.UTF8.GetString(ReceiveData, 0, reve);
-        Debug.Log("Get"+str);
-        ServerSocket.BeginReceiveFrom(ReceiveData, 0, ReceiveData.Length, SocketFlags.None, ref epSender, new AsyncCallback(ReceiveFromClients), epSender);
-
-    }
-    */
-    Socket socket; //目标socket
-    EndPoint clientEnd; //客户端
-    IPEndPoint ipEnd; //侦听端口
-    string recvStr; //接收的字符串
-    string sendStr; //发送的字符串
-    byte[] recvData = new byte[1024]; //接收的数据，必须为字节
-    byte[] sendData = new byte[1024]; //发送的数据，必须为字节
-    int recvLen; //接收的数据长度
-    Thread connectThread; //连接线程
+    Socket socket; //socket
+    EndPoint clientEnd; //client
+    IPEndPoint ipEnd; //port
+    string recvStr; //receive string
+    string sendStr; //send string
+    byte[] recvData = new byte[1024]; //byte recieve
+    byte[] sendData = new byte[1024]; 
+    int recvLen; 
+    Thread connectThread; 
     int UdpPort = 10230;
-
+    bool IfCon = false;
+    bool GO = false;
+    enum InfoState { HostName, PlayerNumber, PlayerCardNumber, TableCardNumber, NeedDrawCard, NeedAnimation, Players, Done };
+    InfoState state;
     //初始化
     void InitSocket()
     {
-        //定义侦听端口,侦听任何IP
         ipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
-        //定义套接字类型,在主线程中定义
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        //服务端需要绑定ip
         socket.Bind(ipEnd);
-        //定义客户端
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
         clientEnd = (EndPoint)sender;
         print("waiting for UDP dgram");
-
-        //开启一个线程连接，必须的，否则主线程卡死
         connectThread = new Thread(new ThreadStart(SocketReceive));
         connectThread.Start();
     }
-
+    void GetData()
+    {
+        IfCon = false;
+        state = InfoState.HostName;
+        ipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        socket.Bind(ipEnd);
+        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+        clientEnd = (EndPoint)sender;
+        print("waiting for UDP dgram 22");
+        connectThread = new Thread(new ThreadStart(SocketGetData));
+        connectThread.Start();
+    }
     void SocketSend(string sendStr)
     {
-        //清空发送缓存
         sendData = new byte[1024];
-        //数据类型转换
         sendData = Encoding.ASCII.GetBytes(sendStr);
-        //发送给指定客户端
         socket.SendTo(sendData, sendData.Length, SocketFlags.None, clientEnd);
     }
-
-    //服务器接收
-    void SocketReceive()
+    void SocketGetData()
     {
-        //进入接收循环
-        while (true)
+        
+        while (state != InfoState.Done)
         {
-            //对data清零
+            print(state);
             recvData = new byte[1024];
-            //获取客户端，获取客户端数据，用引用给客户端赋值
             recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
-            print("message from: " + clientEnd.ToString()); //打印客户端信息
-            //输出接收到的数据
+            print("message from: " + clientEnd.ToString());
+             
             recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
             print(recvStr);
-            //将接收到的数据经过处理再发送出去
-            sendStr = "From Server: " + recvStr;
-            SocketSend(sendStr);
-            break;
+            switch (state)
+            {
+                case InfoState.HostName:
+                    Data.HostName = recvStr;
+                    state = InfoState.NeedAnimation;
+                    break;
+                case InfoState.NeedAnimation:
+                    Data.NeedAnimation = bool.Parse(recvStr);
+                    state = InfoState.NeedDrawCard;
+                    break;
+                case InfoState.NeedDrawCard:
+                    Data.NeedDrawCard = bool.Parse(recvStr);
+                    state = InfoState.PlayerCardNumber;
+                    break;
+                case InfoState.PlayerCardNumber:
+                    Data.PlayerCardNumber = int.Parse(recvStr);
+                    state = InfoState.PlayerNumber;
+                    break;
+                case InfoState.PlayerNumber:
+                    Data.PlayerNumber = int.Parse(recvStr);
+                    state = InfoState.Players;
+                    break;
+                case InfoState.Players:
+                    if (recvStr == "DONE")
+                        state = InfoState.Done;
+                    else
+                    {
+                        Data.players.Add(recvStr);
+                        state = InfoState.Players;
+                    }
+                    break;
+            }
+            SocketSend("ACK");
+            
+        }
+        print("DATA GET DOne");
+        while (true)
+        {
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            print(recvStr);
+            if (recvStr == "GO")
+            {
+                GO = true;
+                break;
+            }
         }
         SocketQuit();
+
+    }
+    void SocketReceive()
+    {
+        recvData = new byte[1024];
+        recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+        print("message from: " + clientEnd.ToString());
+        string data = clientEnd.ToString();
+        string[] realip = data.Split(':');
+        Data.HostIP = realip[0];
+        recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+        print(recvStr);
+        sendStr = Data.MyName;
+        SocketSend(sendStr);
+        IfCon = true;
+        /*while (true)
+        {
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+            print("message from: " + clientEnd.ToString()); 
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            print(recvStr);
+            if(recvStr == "INFO")
+            {
+                recvData = new byte[1024];
+                recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+                print("message from: " + clientEnd.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                Data.HostName = recvStr;
+                recvData = new byte[1024];
+                recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+                print("message from: " + clientEnd.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                Data.PlayerNumber = int.Parse(recvStr);
+                recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+                print("message from: " + clientEnd.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                Data.PlayerCardNumber = int.Parse(recvStr);
+                recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+                print("message from: " + clientEnd.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                Data.TableCardNumber = int.Parse(recvStr);
+                recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+                print("message from: " + clientEnd.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                Data.NeedDrawCard = bool.Parse(recvStr);
+                recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
+                print("message from: " + clientEnd.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                Data.NeedAnimation = bool.Parse(recvStr);
+            }
+            if (recvStr == "GO")
+            {
+                GO = true;
+                break;
+            }
+        }*/
+        SocketQuit();
+        print("Name Done");
     }
 
-    //连接关闭
     void SocketQuit()
     {
-        //关闭线程
         if (connectThread != null)
         {
             connectThread.Interrupt();
             connectThread.Abort();
         }
-        //最后关闭socket
         if (socket != null)
             socket.Close();
         print("disconnect");
@@ -178,7 +198,32 @@ public class ClientConnect : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-    }
+        if (IfCon)
+        {
+            WaitText.text = "Connect to server , wating Host";
+            GetData();
+        }
+        if (GO)
+        {
+            PrintINFO();
+            SceneManager.LoadScene(2);
 
+        }
+            
+    }
+    public void PrintINFO()
+    {
+        print("Hostname = " + Data.MyName);
+        print("Player num = " + Data.PlayerNumber.ToString());
+        print("Host IP = " + Data.HostIP);
+        int j = 0;
+        foreach (var i in Data.players)
+        {
+            print("Player " + j.ToString() + " = " + i);
+        }
+    }
+    void OnApplicationQuit()
+    {
+        SocketQuit();
+    }
 }

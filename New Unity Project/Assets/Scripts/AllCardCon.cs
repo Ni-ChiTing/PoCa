@@ -54,7 +54,7 @@ public class AllCardCon : MonoBehaviour
         {
             for(int j=0; j< Data.PlayerCardNumber; j++) {
                 Give(i, new int[] { card[j+i*Data.PlayerCardNumber] });
-                Debug.Log("person:"+i+" "+card[j + i * Data.PlayerCardNumber]);
+               // Debug.Log("person:"+i+" "+card[j + i * Data.PlayerCardNumber]);
             }
         }
     }

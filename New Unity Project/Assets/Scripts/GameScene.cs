@@ -22,6 +22,7 @@ public class GameScene : MonoBehaviour
         int j = 0;
         foreach ( var name in Data.players){
             player_name[j].text = name;
+            ++j; 
         }
 
 
