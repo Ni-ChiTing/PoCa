@@ -98,7 +98,7 @@ public class StartScene : MonoBehaviour
             if (success){
                 Data.MyName = Name.text;
                 string ip = _ajc.Call<string>("GetIP");
-                bool success2 = _ajc.Call<bool>("showToast", ip);
+                //bool success2 = _ajc.Call<bool>("showToast", ip);
                 SceneManager.LoadScene(3);
             }
             else
