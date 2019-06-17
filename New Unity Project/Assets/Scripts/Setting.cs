@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#define DEBUG //如果define 就不會等有ACK才能進入遊戲 最後要不define才確保每個人都收到開始遊戲
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -127,6 +128,19 @@ public class Setting : MonoBehaviour
         }
         
     }
+    public void ReceiveStartACK()
+    {
+        recvData = new byte[1024];
+        recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+        recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+        while (recvStr != "ACK")
+        {
+            SocketSend("GO");
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+        }
+    } 
     public void SendAndAckReceive()
     {
         int index = 0;
@@ -218,6 +232,9 @@ public class Setting : MonoBehaviour
                 //print("waiting for sending UDP dgram");
                 state = InfoState.HostName;
                 SocketSend("GO");
+                #if DEBUG
+                ReceiveStartACK();
+                #endif
                 socket.Close();
             }
 

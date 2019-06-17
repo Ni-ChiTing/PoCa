@@ -115,6 +115,7 @@ public class ClientConnect : MonoBehaviour
             if (recvStr == "GO")
             {
                 GO = true;
+                SocketSend("ACK");
                 break;
             }
         }
