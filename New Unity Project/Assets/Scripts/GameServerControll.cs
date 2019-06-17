@@ -500,7 +500,7 @@ public class GameServerControll : MonoBehaviour
         }
         PrintAllHandCard();
     }
-    public void send_click()  // TEST FUNTION
+    public void send_click()  // TEST FUNCTION
     {
        // SsendStr = "fghfghgh";
         SsendStr = TakeCard_+"," + Data.players[0];
