@@ -9,6 +9,7 @@ ScriptsOnlyBuild:
     - FirstAid
     - Food
     - GameManager
+    - GamePlay
     - GameScene
     - GameServerControll
     - Gem
@@ -131,15 +132,17 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 10220}
     - Class: 114
-      Script: {instanceID: 10424}
+      Script: {instanceID: 10426}
     - Class: 114
-      Script: {instanceID: 10456}
+      Script: {instanceID: 10458}
     - Class: 114
-      Script: {instanceID: 10624}
+      Script: {instanceID: 10626}
     - Class: 114
-      Script: {instanceID: 10808}
+      Script: {instanceID: 10810}
     - Class: 114
-      Script: {instanceID: 10824}
+      Script: {instanceID: 10826}
+    - Class: 114
+      Script: {instanceID: 18672}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 124
@@ -333,27 +336,27 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 10194}
     - Class: 114
-      Script: {instanceID: 10322}
+      Script: {instanceID: 10324}
     - Class: 114
-      Script: {instanceID: 10422}
+      Script: {instanceID: 10424}
     - Class: 114
-      Script: {instanceID: 10432}
+      Script: {instanceID: 10434}
     - Class: 114
-      Script: {instanceID: 10604}
+      Script: {instanceID: 10606}
     - Class: 114
-      Script: {instanceID: 10800}
+      Script: {instanceID: 10802}
     - Class: 114
-      Script: {instanceID: 10808}
-    - Class: 114
-      Script: {instanceID: 10852}
+      Script: {instanceID: 10810}
     - Class: 114
       Script: {instanceID: 10854}
     - Class: 114
-      Script: {instanceID: 10862}
+      Script: {instanceID: 10856}
     - Class: 114
-      Script: {instanceID: 20508}
+      Script: {instanceID: 10864}
     - Class: 114
-      Script: {instanceID: 21420}
+      Script: {instanceID: 28026}
+    - Class: 114
+      Script: {instanceID: 28030}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 124
@@ -1256,6 +1259,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 1790998af414935a38b391c89cde673d
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: GamePlay
   platform: 13
   scenePathNames:
   - Assets/Scenes/start.unity

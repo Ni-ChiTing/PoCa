@@ -87,6 +87,7 @@
     <Compile Include="Assets\Scripts\CardControl.cs" />
     <Compile Include="Assets\Scripts\ClientConnect.cs" />
     <Compile Include="Assets\Scripts\Data.cs" />
+    <Compile Include="Assets\Scripts\GamePlay.cs" />
     <Compile Include="Assets\Scripts\GameScene.cs" />
     <Compile Include="Assets\Scripts\GameServerControll.cs" />
     <Compile Include="Assets\Scripts\MessageBoxControll.cs" />
