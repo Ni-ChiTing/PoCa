@@ -170,6 +170,56 @@ public class GameServerControll : MonoBehaviour
         print("Unwrap ss = " + r);
         string[] sp = r.Split(',');
         int index = Data.players.IndexOf(sp[0]);
+        for (int i = 0; i < sp.Length; ++i)
+        {
+            print(sp[i]);
+        }
+        if (index == -1)
+        {
+            print("None Find");
+        }
+        else
+        {
+            if (index == 0)
+            {
+                Data.PlayerHostCard.Clear();
+                for (int i = 1; i < sp.Length; ++i)
+                {
+                    Data.PlayerHostCard.Add(int.Parse(sp[i]));
+                }
+            }
+            else if (index == 1)
+            {
+                Data.PlayerOneCard.Clear();
+                for (int i = 1; i < sp.Length; ++i)
+                {
+                    Data.PlayerOneCard.Add(int.Parse(sp[i]));
+                }
+            }
+            else if (index == 2)
+            {
+                Data.PlayerTwoCard.Clear();
+                for (int i = 1; i < sp.Length; ++i)
+                {
+                    Data.PlayerTwoCard.Add(int.Parse(sp[i]));
+                }
+            }
+            else if (index == 3)
+            {
+                Data.PlayerThreeCard.Clear();
+                for (int i = 1; i < sp.Length; ++i)
+                {
+                    Data.PlayerThreeCard.Add(int.Parse(sp[i]));
+                }
+            }
+
+        }
+    }
+    public void UnwrapAndSetHandCard(string name,string r)
+    {
+        print("Unwrap ss = " + r);
+        string[] sp = r.Split(',');
+        int index = Data.players.IndexOf(name);
         if (index == -1)
         {
             print("None Find");
@@ -228,11 +278,11 @@ public class GameServerControll : MonoBehaviour
                 {
                     if (i == Data.PlayerHostCard.Count - 1)
                     {
-                        r = r + i.ToString();
+                        r = r + Data.PlayerHostCard[i].ToString();
                     }
                     else
                     {
-                        r = r + i.ToString() + ",";
+                        r = r + Data.PlayerHostCard[i].ToString() + ",";
                     }
                 }
             }
@@ -242,11 +292,11 @@ public class GameServerControll : MonoBehaviour
                 {
                     if (i == Data.PlayerOneCard.Count - 1)
                     {
-                        r = r + i.ToString();
+                        r = r + Data.PlayerOneCard[i].ToString();
                     }
                     else
                     {
-                        r = r + i.ToString() + ",";
+                        r = r + Data.PlayerOneCard[i].ToString() + ",";
                     }
                 }
             }
@@ -256,11 +306,11 @@ public class GameServerControll : MonoBehaviour
                 {
                     if (i == Data.PlayerTwoCard.Count - 1)
                     {
-                        r = r + i.ToString();
+                        r = r + Data.PlayerTwoCard[i].ToString();
                     }
                     else
                     {
-                        r = r + i.ToString() + ",";
+                        r = r + Data.PlayerTwoCard[i].ToString() + ",";
                     }
                 }
             }
@@ -270,18 +320,18 @@ public class GameServerControll : MonoBehaviour
                 {
                     if (i == Data.PlayerThreeCard.Count - 1)
                     {
-                        r = r + i.ToString();
+                        r = r + Data.PlayerThreeCard[i].ToString();
                     }
                     else
                     {
-                        r = r + i.ToString() + ",";
+                        r = r + Data.PlayerThreeCard[i].ToString() + ",";
                     }
                 }
             }
             return r;
         }
     }
-    public void ResolveMSG(string recv)
+    public void ResolveMSG(string recv) // Can Modify by you
     {
         string[] r = recv.Split(',');
         for (int i = 0; i < r.Length; ++i)
@@ -395,6 +445,7 @@ public class GameServerControll : MonoBehaviour
     public void AddHandCard(string name,int cardindex)
     {
         int i = Data.players.IndexOf(name);
+        print("index" + i.ToString());
         if (i == -1)
         {
             print("None Find");
@@ -411,11 +462,11 @@ public class GameServerControll : MonoBehaviour
             }
             else if (i == 2)
             {
-                Data.PlayerTwoCard.RemoveAt(cardindex);
+                Data.PlayerTwoCard.Add(cardindex);
             }
             else if (i == 3)
             {
-                Data.PlayerThreeCard.RemoveAt(cardindex);
+                Data.PlayerThreeCard.Add(cardindex);
             }
         }
     }
@@ -500,10 +551,32 @@ public class GameServerControll : MonoBehaviour
         }
         PrintAllHandCard();
     }
-    public void send_click()  // TEST FUNTION
+    public void send_click()  // TEST FUNCTION
     {
-        SsendStr = "fghfghgh";
+        // SsendStr = "fghfghgh";
+        /*SsendStr = TakeCard_+"," + Data.players[0];
         ServerSendClient(SsendStr);
+        SsendStr = AddCardFromTable_ +","+ Data.players[0];
+        ServerSendClient(SsendStr);
+        SsendStr = DiscardCard_ + "," + Data.players[0];
+        ServerSendClient(SsendStr);
+
+        SsendStr = GetNowHandCard_ + "," + Data.players[0];
+        ServerSendClient(SsendStr);
+        */
+        Data.MyName = "sss";
+        Data.players.Add("sss");
+        SetInitCard();
+        PrintAllHandCard();
+        SsendStr = WrapHandCardToString(Data.MyName);
+        UnwrapAndSetHandCard(SsendStr);
+        PrintAllHandCard();
+        print("-----------ADD-------------------");
+        AddHandCard(Data.MyName, Data.Cards[Data.NowCardIndex]);
+        PrintAllHandCard();
+        print("--------------Discard----------------");
+        DiscardPlayerCard(Data.MyName, 0);
+        PrintAllHandCard();
     }
     // Update is called once per frame
     void Update()
