@@ -23,7 +23,7 @@ public static class Data
     public static int PlayerNumber = 3;
     public static int PlayerCardNumber = 5;
     public static int TableCardNumber = 32;
-    public static bool NeedAnimation;
+    public static bool NeedAnimation = true;
     public static bool NeedDrawCard = false;
     
     

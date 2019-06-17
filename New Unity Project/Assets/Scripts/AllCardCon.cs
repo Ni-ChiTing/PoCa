@@ -20,11 +20,18 @@ public class AllCardCon : MonoBehaviour
     public GameObject askUI;
     public Text askUIText;
 
-    public bool distributeAni;
-        
+
+    public static AllCardCon allCardCon;
+
+    private int flying;
+    private int givingPlayer = 0;
+    private int givingCard = 0;
+    private int[] order;
+
 
     void Awake()
     {
+        allCardCon = this;
         int children = transform.childCount;
         cardsTrans = new Transform[children];
         cardCons = new CardControl[children];
@@ -38,29 +45,55 @@ public class AllCardCon : MonoBehaviour
     }
 
     void Start() {
+        mId = 0;
         askUI.SetActive(false);
-        int []card = new int[52];
+        order = new int[52];
         Random rand = new Random();
         int iTarget = 0, iCardTemp = 0;
         for (int i = 0; i < 52; i++)
-            card[i] = i;
-        for (int i = 0; i < 52; i++) {
-            iTarget = UnityEngine.Random.Range(0, 52);
-            iCardTemp = card[i];
-            card[i] = card[iTarget];
-            card[iTarget] = iCardTemp;
-        }
-        for (int i = 0; i < Data.PlayerNumber; i++)
+            order[i] = i;
+        for (int i = 0; i < 52; i++)
         {
-            for(int j=0; j< Data.PlayerCardNumber; j++) {
-                Give(i, new int[] { card[j+i*Data.PlayerCardNumber] });
-               // Debug.Log("person:"+i+" "+card[j + i * Data.PlayerCardNumber]);
+            iTarget = UnityEngine.Random.Range(0, 52);
+            iCardTemp = order[i];
+            order[i] = order[iTarget];
+            order[iTarget] = iCardTemp;
+        }
+        GameObject.Find("ani_Text_Button").GetComponent<Text>().text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
+        if (Data.NeedAnimation)
+        {
+            flying = Data.PlayerCardNumber * Data.PlayerNumber;
+            Invoke("distribute", 0.3f);
+        }
+        else
+        {
+            flying = 0;
+            for (int i = 0; i < Data.PlayerNumber; i++)
+            {
+                for (int j = 0; j < Data.PlayerCardNumber; j++)
+                {
+                    Give(i, new int[] { order[j + i * Data.PlayerCardNumber] });
+                    Debug.Log("person:" + i + " " + order[j + i * Data.PlayerCardNumber]);
+                }
             }
         }
     }
+    void distribute()
+    {
+        int card = order[givingCard];
+        cardsTrans[card].SetParent(players[givingPlayer]);
+        cardCons[card].ani = true;
+        givingCard += 1;
+        givingPlayer = (++givingPlayer >= Data.PlayerNumber) ? 0 : givingPlayer;
 
+        if (givingCard < Data.PlayerNumber * Data.PlayerCardNumber)
+            Invoke("distribute", 0.3f);
+    }
     void Update()
     {
+        if (flying > 0)
+            return;
+
         if (mId == nextPlayerCon.player)
         {
             if (Input.GetMouseButtonDown(0))
@@ -121,26 +154,45 @@ public class AllCardCon : MonoBehaviour
         foreach (int i in cards)
         {
             cardsTrans[i].SetParent(players[player]);
-            cardsTrans[i].localPosition = Vector3.zero;
             cardsTrans[i].localRotation = Quaternion.Euler(Vector3.zero);
         }
         CardPosition(player);
     }
 
+    public void Give(int player, int card)
+    {
+        cardsTrans[card].SetParent(players[player]);
+        cardsTrans[card].localRotation = Quaternion.Euler(Vector3.zero);
+        CardPosition(player);
+
+        flying -= 1;
+    }
+
     public void CardPosition(int player)
     {
-        if (player < 4)
-        {
-            Transform playerTrans = players[player];
-            int children = playerTrans.childCount;
+        if (player > 3)
+            return;
 
-            float gap = cardDisplayWidth / (children + 1);
-            float xPos = - cardDisplayWidth / 2 + gap;
-            for (int i = 0; i < children; ++i)
-            {
-                playerTrans.GetChild(i).localPosition = new Vector3(xPos, 0, i * -0.000001f);
-                xPos += gap;
-            }
+        Transform playerTrans = players[player];
+        int children = playerTrans.childCount;
+        if (flying > 0)
+        {
+            int i;
+            for (i = 0; i < children; ++i)
+                if (playerTrans.GetChild(i).GetComponent<CardControl>().ani == true)
+                    break;
+            children = i;
+        }
+
+        playerTrans = players[player];
+        children = playerTrans.childCount;
+
+        float gap = cardDisplayWidth / (children + 1);
+        float xPos = -cardDisplayWidth / 2 + gap;
+        for (int i = 0; i < children; ++i)
+        {
+            playerTrans.GetChild(i).localPosition = new Vector3(xPos, 0, i * -0.000001f);
+            xPos += gap;
         }
     }
 
@@ -168,9 +220,9 @@ public class AllCardCon : MonoBehaviour
     public void aniBtnClick(Text text) {
         if (mId == 0)
         {
-            distributeAni = !distributeAni;
-            text.text = (distributeAni) ? "發牌過程on" : "發牌過程off";
-        } 
+            Data.NeedAnimation = !Data.NeedAnimation;
+            text.text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
+        }
     }
 
     public void reStart() {
