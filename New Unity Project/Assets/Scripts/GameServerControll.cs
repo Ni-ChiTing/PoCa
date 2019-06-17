@@ -445,6 +445,7 @@ public class GameServerControll : MonoBehaviour
     public void AddHandCard(string name,int cardindex)
     {
         int i = Data.players.IndexOf(name);
+        print("index" + i.ToString());
         if (i == -1)
         {
             print("None Find");
@@ -570,9 +571,11 @@ public class GameServerControll : MonoBehaviour
         SsendStr = WrapHandCardToString(Data.MyName);
         UnwrapAndSetHandCard(SsendStr);
         PrintAllHandCard();
-        AddCardFromTable(Data.MyName, Data.Cards[Data.NowCardIndex]);
+        print("-----------ADD-------------------");
+        AddHandCard(Data.MyName, Data.Cards[Data.NowCardIndex]);
         PrintAllHandCard();
-        DiscardCard(Data.MyName, 0);
+        print("--------------Discard----------------");
+        DiscardPlayerCard(Data.MyName, 0);
         PrintAllHandCard();
     }
     // Update is called once per frame

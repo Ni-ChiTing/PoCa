@@ -6,7 +6,7 @@ using UnityEngine;
 public static class Data
 {
     // Scene start
-    public static string MyName = "SSS";
+    public static string MyName ;
     public static bool IamHost = false;
     public static string HostIP = "";
     public static List<string> playerIP = new List<string>();
@@ -20,7 +20,7 @@ public static class Data
     public static string HostName = "ss";
     public static List<string> players = new List<string>();
     public static string GameName;
-    public static int PlayerNumber = 3;
+    public static int PlayerNumber = 1;
     public static int PlayerCardNumber = 5;
     public static int TableCardNumber = 32;
     public static bool NeedAnimation = true;
