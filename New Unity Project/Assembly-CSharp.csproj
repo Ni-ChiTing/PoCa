@@ -87,7 +87,6 @@
      <Compile Include="Assets\Scripts\OtherPlayer.cs" />
      <Compile Include="Assets\Scripts\Setting.cs" />
      <Compile Include="Assets\Scripts\StartScene.cs" />
-     <Compile Include="Assets\Scripts\TableCon.cs" />
      <None Include="Assets\Resources\MegaPack1Lite\RomanCityPack1Lite\README.txt" />
      <None Include="Assets\Resources\QuickOutline\Resources\Shaders\OutlineFill.shader" />
      <None Include="Assets\Resources\QuickOutline\Readme.txt" />

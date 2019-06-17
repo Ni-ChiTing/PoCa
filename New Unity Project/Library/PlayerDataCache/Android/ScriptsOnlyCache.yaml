@@ -1,12 +1,15 @@
 ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
+    - AllCardCon
     - Axe
     - Crate
     - DamageSource
     - FirstAid
     - Food
     - GameManager
+    - GameScene
+    - GameServerControll
     - Gem
     - HUD
     - HealthBar
@@ -15,10 +18,12 @@ ScriptsOnlyBuild:
     - ItemDragHandler
     - ItemDropHandler
     - MessageBoxControll
+    - OtherPlayer
+    - Outline
     - PlayerController
     - PlayerFollow
-    - Setting
     - Sheep
+    - nextPlayerCon
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.TestListCacheData
     UnityEngine.UI.dll:
@@ -28,20 +33,15 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.Button
     - UnityEngine.UI.CanvasScaler
     - UnityEngine.UI.ContentSizeFitter
-    - UnityEngine.UI.Dropdown
     - UnityEngine.UI.GraphicRaycaster
     - UnityEngine.UI.HorizontalLayoutGroup
     - UnityEngine.UI.Image
     - UnityEngine.UI.InputField
-    - UnityEngine.UI.Mask
     - UnityEngine.UI.Outline
-    - UnityEngine.UI.ScrollRect
-    - UnityEngine.UI.Scrollbar
     - UnityEngine.UI.Shadow
     - UnityEngine.UI.Text
-    - UnityEngine.UI.Toggle
   sceneClasses:
-    Assets/Scenes/setting.unity:
+    Assets/Scenes/game.unity:
     - Class: 1
       Script: {instanceID: 0}
     - Class: 4
@@ -72,11 +72,17 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
+    - Class: 82
+      Script: {instanceID: 0}
     - Class: 83
+      Script: {instanceID: 0}
+    - Class: 89
       Script: {instanceID: 0}
     - Class: 90
       Script: {instanceID: 0}
     - Class: 91
+      Script: {instanceID: 0}
+    - Class: 92
       Script: {instanceID: 0}
     - Class: 95
       Script: {instanceID: 0}
@@ -85,87 +91,87 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 9476}
-    - Class: 114
-      Script: {instanceID: 9544}
-    - Class: 114
       Script: {instanceID: 9546}
     - Class: 114
       Script: {instanceID: 9548}
     - Class: 114
       Script: {instanceID: 9550}
     - Class: 114
-      Script: {instanceID: 9552}
-    - Class: 114
       Script: {instanceID: 9554}
     - Class: 114
-      Script: {instanceID: 9558}
+      Script: {instanceID: 9556}
     - Class: 114
-      Script: {instanceID: 9562}
+      Script: {instanceID: 9560}
     - Class: 114
-      Script: {instanceID: 9566}
+      Script: {instanceID: 9564}
     - Class: 114
       Script: {instanceID: 9568}
     - Class: 114
-      Script: {instanceID: 9574}
+      Script: {instanceID: 9570}
     - Class: 114
-      Script: {instanceID: 9578}
+      Script: {instanceID: 9580}
     - Class: 114
-      Script: {instanceID: 9592}
-    - Class: 114
-      Script: {instanceID: 9594}
-    - Class: 114
-      Script: {instanceID: 9598}
-    - Class: 114
-      Script: {instanceID: 9602}
+      Script: {instanceID: 9600}
     - Class: 114
       Script: {instanceID: 9604}
     - Class: 114
       Script: {instanceID: 9606}
     - Class: 114
-      Script: {instanceID: 9690}
+      Script: {instanceID: 9692}
     - Class: 114
-      Script: {instanceID: 9722}
+      Script: {instanceID: 9724}
     - Class: 114
-      Script: {instanceID: 9728}
+      Script: {instanceID: 9730}
     - Class: 114
-      Script: {instanceID: 9740}
+      Script: {instanceID: 9742}
     - Class: 114
-      Script: {instanceID: 9744}
+      Script: {instanceID: 9748}
     - Class: 114
-      Script: {instanceID: 9758}
+      Script: {instanceID: 9762}
     - Class: 114
-      Script: {instanceID: 9912}
+      Script: {instanceID: 9826}
     - Class: 114
-      Script: {instanceID: 9980}
+      Script: {instanceID: 9916}
     - Class: 114
-      Script: {instanceID: 10000}
+      Script: {instanceID: 9984}
     - Class: 114
-      Script: {instanceID: 10002}
+      Script: {instanceID: 10004}
     - Class: 114
-      Script: {instanceID: 10188}
+      Script: {instanceID: 10006}
     - Class: 114
-      Script: {instanceID: 10316}
+      Script: {instanceID: 10196}
     - Class: 114
-      Script: {instanceID: 10416}
+      Script: {instanceID: 10222}
+    - Class: 114
+      Script: {instanceID: 10324}
     - Class: 114
       Script: {instanceID: 10424}
     - Class: 114
-      Script: {instanceID: 10596}
+      Script: {instanceID: 10426}
     - Class: 114
-      Script: {instanceID: 10792}
+      Script: {instanceID: 10434}
     - Class: 114
-      Script: {instanceID: 10800}
+      Script: {instanceID: 10458}
     - Class: 114
-      Script: {instanceID: 10844}
+      Script: {instanceID: 10606}
     - Class: 114
-      Script: {instanceID: 10846}
+      Script: {instanceID: 10626}
+    - Class: 114
+      Script: {instanceID: 10802}
+    - Class: 114
+      Script: {instanceID: 10810}
+    - Class: 114
+      Script: {instanceID: 10826}
     - Class: 114
       Script: {instanceID: 10854}
     - Class: 114
-      Script: {instanceID: 60406}
+      Script: {instanceID: 10856}
     - Class: 114
-      Script: {instanceID: 60410}
+      Script: {instanceID: 10864}
+    - Class: 114
+      Script: {instanceID: 28300}
+    - Class: 114
+      Script: {instanceID: 28304}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 124
@@ -199,6 +205,8 @@ ScriptsOnlyBuild:
     - Class: 224
       Script: {instanceID: 0}
     - Class: 238
+      Script: {instanceID: 0}
+    - Class: 258
       Script: {instanceID: 0}
   scriptHashData:
   - hash:
@@ -749,6 +757,12 @@ ScriptsOnlyBuild:
     className: Sheep
   - hash:
       serializedVersion: 2
+      Hash: 0edd08ad56aa7dbe9719d2e9c98081ee
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ClientConnect
+  - hash:
+      serializedVersion: 2
       Hash: 77c925d9888677c226e55ad25db25fc7
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
@@ -875,6 +889,12 @@ ScriptsOnlyBuild:
     className: HUD
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: GameServerControll
+  - hash:
+      serializedVersion: 2
       Hash: 9d3ab16e94af687643dd5c582f74229b
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
@@ -965,7 +985,7 @@ ScriptsOnlyBuild:
     className: TMP_SubMesh
   - hash:
       serializedVersion: 2
-      Hash: 750ab2c4f67d8da8005dc32a5006166b
+      Hash: 1fb02b0c394babc11a8445af0281dbde
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: AllCardCon
@@ -999,19 +1019,7 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
-  - hash:
-      serializedVersion: 2
-      Hash: 0edd08ad56aa7dbe9719d2e9c98081ee
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: ClientConnect
-  - hash:
-      serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: GameServerControll
   platform: 13
   scenePathNames:
-  - Assets/Scenes/setting.unity
+  - Assets/Scenes/game.unity
   playerPath: C:/Users/USER/Desktop/POCA.apk
