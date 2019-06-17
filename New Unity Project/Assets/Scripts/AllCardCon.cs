@@ -20,6 +20,9 @@ public class AllCardCon : MonoBehaviour
     public GameObject askUI;
     public Text askUIText;
 
+    public GameObject orderUI;
+    public bool clockwise;
+
 
     public static AllCardCon allCardCon;
 
@@ -27,7 +30,6 @@ public class AllCardCon : MonoBehaviour
     private int givingPlayer = 0;
     private int givingCard = 0;
     private int[] order;
-
 
     void Awake()
     {
@@ -78,6 +80,7 @@ public class AllCardCon : MonoBehaviour
             }
         }
     }
+
     void distribute()
     {
         int card = order[givingCard];
@@ -89,6 +92,7 @@ public class AllCardCon : MonoBehaviour
         if (givingCard < Data.PlayerNumber * Data.PlayerCardNumber)
             Invoke("distribute", 0.3f);
     }
+
     void Update()
     {
         if (flying > 0)
@@ -232,5 +236,22 @@ public class AllCardCon : MonoBehaviour
 
     public void exit() {
         SceneManager.LoadScene(0);
+    }
+
+    public void setClockwise(int clockwise) {
+        switch (clockwise)
+        {
+            case 1:
+                this.clockwise = true;
+                break;
+            case 0:
+                this.clockwise = false;
+                break;
+            default:
+                int i = Random.Range(0, 2);
+                this.clockwise = i > 0;
+                break;
+        }
+        orderUI.SetActive(false);
     }
 }

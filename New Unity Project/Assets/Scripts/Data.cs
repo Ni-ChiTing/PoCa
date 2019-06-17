@@ -20,11 +20,9 @@ public static class Data
     public static string HostName = "ss";
     public static List<string> players = new List<string>();
     public static string GameName;
-    public static int PlayerNumber = 3;
+    public static int PlayerNumber = 4;
     public static int PlayerCardNumber = 5;
     public static int TableCardNumber = 32;
     public static bool NeedAnimation = true;
-    public static bool NeedDrawCard = false;
-    
-    
+    public static bool NeedDrawCard = true;       
 }

@@ -61,11 +61,11 @@ public class Setting : MonoBehaviour
         player3 = GameObject.Find("Canvas/conn/connect2/Text").GetComponent<Text>();
         player4 = GameObject.Find("Canvas/conn/connect3/Text").GetComponent<Text>();
         game_name = GameObject.Find("Canvas/set/bg/game/Dropdown/Label").GetComponent<Text>();
-        player_number = GameObject.Find("Canvas/set/bg/set/PlayerNumDropDown/Label").GetComponent<Text>();
-        player_card_number = GameObject.Find("Canvas/set/bg/set/PlayerCardInputField/Text").GetComponent<Text>();
-        table_card_number = GameObject.Find("Canvas/set/bg/set/TableCardInputField/Text").GetComponent<Text>();
-        need_animation = GameObject.Find("Canvas/set/bg/Toggle").GetComponent<Toggle>();
-        need_draw_card = GameObject.Find("Canvas/set/bg/Toggle2").GetComponent<Toggle>();
+        player_number = GameObject.Find("Canvas/set/bg/set/pn/Dropdown/Label").GetComponent<Text>();
+        player_card_number = GameObject.Find("Canvas/set/bg/set/cn/InputField/Text").GetComponent<Text>();
+        //table_card_number = GameObject.Find("Canvas/set/bg/set/TableCardInputField/Text").GetComponent<Text>();
+        need_animation = GameObject.Find("Canvas/set/bg/toggle/Toggle").GetComponent<Toggle>();
+        need_draw_card = GameObject.Find("Canvas/set/bg/toggle/Toggle1").GetComponent<Toggle>();
     }
     public void startBtn()
     {
