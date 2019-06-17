@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define DEBUG //ForDebug without ACK
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -115,7 +116,9 @@ public class ClientConnect : MonoBehaviour
             if (recvStr == "GO")
             {
                 GO = true;
+                #if DEBUG
                 SocketSend("ACK");
+                #endif
                 break;
             }
         }

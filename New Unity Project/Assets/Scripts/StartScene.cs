@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define DEBUG //NOT DETECT WIFI and WIFI AP
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -48,6 +49,9 @@ public class StartScene : MonoBehaviour
                 //m_ReachabilityText = "Reachable via Local Area Network.";
                 IfWifiOpen = true;
             }
+#if DEBUG
+            IfWifiOpen = true;
+#endif
             if (!IfWifiOpen)
             {
                 Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox");
@@ -96,6 +100,9 @@ public class StartScene : MonoBehaviour
         else{
             bool success = _ajc.Call<bool>("CheckWifiAP");
             //bool success2 = _ajc.Call<bool>("showToast", success.ToString());
+#if DEBUG
+            success = true;
+#endif
             if (success){
                 Data.MyName = Name.text;
                 string ip = _ajc.Call<string>("GetIP");

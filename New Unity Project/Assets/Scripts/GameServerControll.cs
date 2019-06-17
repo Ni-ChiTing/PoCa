@@ -502,8 +502,17 @@ public class GameServerControll : MonoBehaviour
     }
     public void send_click()  // TEST FUNTION
     {
-        SsendStr = "fghfghgh";
+       // SsendStr = "fghfghgh";
+        SsendStr = TakeCard_+"," + Data.players[0];
         ServerSendClient(SsendStr);
+        SsendStr = AddCardFromTable_ +","+ Data.players[0];
+        ServerSendClient(SsendStr);
+        SsendStr = DiscardCard_ + "," + Data.players[0];
+        ServerSendClient(SsendStr);
+
+        SsendStr = GetNowHandCard_ + "," + Data.players[0];
+        ServerSendClient(SsendStr);
+
     }
     // Update is called once per frame
     void Update()
