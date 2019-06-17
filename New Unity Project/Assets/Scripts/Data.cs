@@ -6,7 +6,7 @@ using UnityEngine;
 public static class Data
 {
     // Scene start
-    public static string MyName;
+    public static string MyName = "SSS";
     public static bool IamHost = false;
     public static string HostIP = "";
     public static List<string> playerIP = new List<string>();
