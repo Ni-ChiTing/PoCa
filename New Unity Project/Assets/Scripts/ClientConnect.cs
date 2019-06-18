@@ -244,4 +244,8 @@ public class ClientConnect : MonoBehaviour
         InitSocket();
         IfReset = false;
     }
+
+    public void resetBtn() {
+
+    }
 }

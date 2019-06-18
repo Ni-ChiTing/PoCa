@@ -7,7 +7,7 @@ public static class Data
 {
     // Scene start
     public static string MyName ;
-    public static bool IamHost = false;
+    public static bool IamHost = true;
     public static string HostIP = "";
     public static List<string> playerIP = new List<string>();
     public static List<int> PlayerOneCard = new List<int>();
@@ -15,6 +15,7 @@ public static class Data
     public static List<int> PlayerThreeCard = new List<int>();
     public static List<int> PlayerHostCard = new List<int>();
     public static int [] Cards = new int[52];
+    public static bool waiting = true;
     public static int NowCardIndex = 0;
     // Scene setting
     public static string HostName = "ss";

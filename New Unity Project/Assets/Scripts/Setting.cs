@@ -440,5 +440,6 @@ public class Setting : MonoBehaviour {
     private void updateSetting() {
         //table_card_number.text = (52 - int.Parse(player_number.text) * int.Parse(playerCardNum.text)).ToString();
     }
+    
 }
 
