@@ -29,7 +29,7 @@ public class AllCardCon : MonoBehaviour
     private int flying;
     private int givingPlayer = 0;
     private int givingCard = 0;
-    private int[] order;
+    //private int[] order;
 
     void Awake()
     {
@@ -49,19 +49,28 @@ public class AllCardCon : MonoBehaviour
     void Start() {
         mId = 0;
         askUI.SetActive(false);
-        order = new int[52];
-        Random rand = new Random();
-        int iTarget = 0, iCardTemp = 0;
-        for (int i = 0; i < 52; i++)
-            order[i] = i;
-        for (int i = 0; i < 52; i++)
-        {
-            iTarget = UnityEngine.Random.Range(0, 52);
-            iCardTemp = order[i];
-            order[i] = order[iTarget];
-            order[iTarget] = iCardTemp;
-        }
         GameObject.Find("ani_Text_Button").GetComponent<Text>().text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
+
+        if (Data.IamHost)
+        {
+            //order = new int[52];
+            Random rand = new Random();
+            int iTarget = 0, iCardTemp = 0;
+            for (int i = 0; i < 52; i++)
+                Data.Cards[i] = i;
+            for (int i = 0; i < 52; i++)
+            {
+                iTarget = UnityEngine.Random.Range(0, 52);
+                iCardTemp = Data.Cards[i];
+                Data.Cards[i] = Data.Cards[iTarget];
+                Data.Cards[iTarget] = iCardTemp;
+            }
+            Data.waiting = false;
+        }
+    }
+
+    void StartDistribute(int startPlayer) {
+
         if (Data.NeedAnimation)
         {
             flying = Data.PlayerCardNumber * Data.PlayerNumber;
@@ -74,16 +83,17 @@ public class AllCardCon : MonoBehaviour
             {
                 for (int j = 0; j < Data.PlayerCardNumber; j++)
                 {
-                    Give(i, new int[] { order[j + i * Data.PlayerCardNumber] });
-                    Debug.Log("person:" + i + " " + order[j + i * Data.PlayerCardNumber]);
+                    Give(i, new int[] { Data.Cards[j + i * Data.PlayerCardNumber] });
+                    Debug.Log("person:" + i + " " + Data.Cards[j + i * Data.PlayerCardNumber]);
                 }
             }
         }
+
     }
 
     void distribute()
     {
-        int card = order[givingCard];
+        int card = Data.Cards[givingCard];
         cardsTrans[card].SetParent(players[givingPlayer]);
         cardCons[card].ani = true;
         givingCard += 1;

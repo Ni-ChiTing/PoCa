@@ -231,4 +231,8 @@ public class ClientConnect : MonoBehaviour
     {
         SocketQuit();
     }
+
+    public void resetBtn() {
+
+    }
 }
