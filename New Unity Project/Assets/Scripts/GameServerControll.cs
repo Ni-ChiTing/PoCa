@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class GameServerControll : MonoBehaviour {
@@ -40,10 +41,72 @@ public class GameServerControll : MonoBehaviour {
     const string Heart = "H";
     const string Diamond = "DI";
     const string Club = "C";
+
+    UdpClient udpClient;
+
     //data.playerIP[0] is host
     //data.players[0] is host
     //card = 0 -- > 梅花 A card = 1 --> 方塊 A card == 2 --> 愛心 A card == 3 --> 黑桃 A 
     // S 黑桃 H 愛心 DI 方塊 C 梅花
+
+    public void InitServerSocket() {
+        udpClient = new UdpClient();
+        udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, UdpPort));
+        udpClient.Client.EnableBroadcast = true;
+    }
+
+    public void ServerSendClient(string endpoint_ip, string send_msg) {
+        var data = Encoding.UTF8.GetBytes(send_msg);
+        udpClient.Send(data, data.Length, endpoint_ip, UdpPort);
+    }
+
+    public void ServerSendAllClient(string send_msg) {
+        var data = Encoding.UTF8.GetBytes(send_msg);
+        string subnet_s = getsubnet();
+        udpClient.Send(data, data.Length, subnet_s, UdpPort);
+    }
+
+    void ServerListenClient() {
+        Task.Run(() => {
+            var from = new IPEndPoint(0, 0);
+            while (true) {
+                var recvBuffer = udpClient.Receive(ref from);
+                // HERE! Do something after received data.
+                print(Encoding.UTF8.GetString(recvBuffer));
+            }
+        });
+    }
+        
+    void InitClientSocket() {
+        udpClient = new UdpClient();
+        udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, UdpPort));
+        udpClient.Client.EnableBroadcast = true;
+    }
+
+    public void ClientSendServer(string send_msg) {
+        var data = Encoding.UTF8.GetBytes(send_msg);
+        udpClient.Send(data, data.Length, Data.HostIP, UdpPort);
+    }
+
+    public void ClientReceiveServer() {
+        Task.Run(() => {
+            var from = new IPEndPoint(0, 0);
+            while (true) {
+                var recvBuffer = udpClient.Receive(ref from);
+                print(Encoding.UTF8.GetString(recvBuffer));
+            }
+        });
+    }
+
+    public string getsubnet() {
+        string hostName = System.Net.Dns.GetHostName();
+        string ipBase = System.Net.Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        string[] ipParts = ipBase.Split('.');
+        ipBase = ipParts[0] + "." + ipParts[1] + "." + ipParts[2] + ".255";
+        return ipBase;
+    }
+
+    /*
     void InitServerSocket() {
         SipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
         Ssocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -69,7 +132,7 @@ public class GameServerControll : MonoBehaviour {
             print("Send IP is " + Data.playerIP[i]);
             SetClientSend(Data.playerIP[i]);
             ServerSendClient(SsendStr);
-            
+
         }
         SetClientSend(Data.playerIP[1]);
         //SsendData = new byte[1024];
@@ -116,7 +179,7 @@ public class GameServerControll : MonoBehaviour {
             recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
             print("message from: " + serverEnd.ToString());
             recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
-            print(recvStr);*/
+            print(recvStr);
             recvData = new byte[1024];
             recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
             print("message from: " + serverEnd.ToString());
@@ -126,6 +189,8 @@ public class GameServerControll : MonoBehaviour {
         }
 
     }
+
+*/
 
     public int CardNameToIndex(string card) //將 card 從 string 表示轉乘 int
     {
@@ -428,10 +493,12 @@ public class GameServerControll : MonoBehaviour {
             PrintAllHandCard();
             InitServerSocket();
 
+            ServerListenClient();
         } else {
 
             InitClientSocket();
-            ClientSendServer("AAAA");
+            
+            ClientReceiveServer();
         }
         PrintAllHandCard();
     }
@@ -461,14 +528,25 @@ public class GameServerControll : MonoBehaviour {
         print("--------------Discard----------------");
         DiscardPlayerCard(Data.MyName, 0);
         PrintAllHandCard();*/
+        /*
         for (int i = 0; i< Data.playerIP.Count; ++i)
         {
             print("Player ip = " + Data.playerIP[i]);
         }
-        ServerSendClient("SSS");
+        ServerSendClient(Data.playerIP[1], "SSS");
+        print("1");
         ServerSendAllClient("AAAAA");
-        ServerSendClient(WrapAllCard());
-
+        print("2");
+        ServerSendClient(Data.playerIP[1], WrapAllCard());
+        print("3");
+        */
+        if (Data.IamHost) {
+            ServerSendClient(Data.playerIP[1], "SG_DATA-1");
+            ServerSendAllClient("BC_DATA");
+            ServerSendClient(Data.playerIP[1], "SG_DATA-2");
+        } else {
+            ClientSendServer("SG_DATA-1");
+        }
     }
     // Update is called once per frame
     void Update() {
