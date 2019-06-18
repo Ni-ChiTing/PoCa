@@ -86,6 +86,9 @@ public class AllCardCon : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene(0);
+
         if (flying > 0 || Data.waiting)
             return;
 
