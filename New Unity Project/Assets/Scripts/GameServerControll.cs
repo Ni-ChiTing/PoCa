@@ -33,6 +33,7 @@ public class GameServerControll : MonoBehaviour {
     const string AddCardFromTable_ = "A";
     const string DiscardCard_ = "D";
     const string GetNowHandCard_ = "G";
+    const string GetAllCard_ = "AC";
     const string Spade = "S";
     const string Heart = "H";
     const string Diamond = "DI";
@@ -208,6 +209,27 @@ public class GameServerControll : MonoBehaviour {
 
         }
     }
+    public string WrapAllCard()
+    {
+        string card = "";
+        for (int i = 0; i < 52; ++i)
+        {
+            if ( i == 51)
+                card = card + Data.Cards[i].ToString() ;
+            else
+                card = card + Data.Cards[i].ToString() + ",";
+
+        }
+        return card;
+    }
+    public void UnwrapAllCard(string card)
+    {
+        string[] sp = card.Split(',');
+        for (int i = 0; i < sp.Length; ++i)
+        {
+            Data.Cards[i] = int.Parse(sp[i]);
+        }
+    }
     public string WrapHandCardToString(string name) // Wrap Hand Card To String 以利server 發送
     {
         int index = Data.players.IndexOf(name);
@@ -266,6 +288,9 @@ public class GameServerControll : MonoBehaviour {
                 } else if (r[i] == GetNowHandCard_) {
                     print("Someone's Hand Card");
 
+                }else if (r[i] == GetAllCard_)
+                {
+                    print("Get All Card");
                 }
 
             }

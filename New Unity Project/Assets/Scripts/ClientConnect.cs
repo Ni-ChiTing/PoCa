@@ -223,9 +223,11 @@ public class ClientConnect : MonoBehaviour
         if (IfReset)
         {
             SocketQuit();
-
+            WaitText.text = "Waiting .. .. ..";
+            InitSocket();
+            IfReset = false;
         }
-            
+
     }
     public void PrintINFO()
     {
@@ -241,8 +243,7 @@ public class ClientConnect : MonoBehaviour
     void OnApplicationQuit()
     {
         SocketQuit();
-        InitSocket();
-        IfReset = false;
+        
     }
 
 

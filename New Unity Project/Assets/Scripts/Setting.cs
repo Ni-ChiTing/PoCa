@@ -98,6 +98,7 @@ public class Setting : MonoBehaviour {
             ShowDiaData();
             StartTransmitData();
             GameObject.Destroy(Messagebox);
+            Messagebox = null;
             SendStart();
             SceneManager.LoadScene(2);
         }
@@ -228,6 +229,8 @@ public class Setting : MonoBehaviour {
         //GameObject.Destroy(Messagebox);
     }
     public void ShowDia(string title, string context) {
+        if (Messagebox != null)
+            GameObject.Destroy(Messagebox);
         Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox");
         Messagebox = GameObject.Instantiate(Messagebox, GameObject.Find("Canvas").transform) as GameObject;
         Messagebox.transform.localScale = new Vector3(1, 1, 1);
@@ -240,6 +243,8 @@ public class Setting : MonoBehaviour {
         Messagebox.GetComponent<MessageBoxControll>().Confirm.onClick.AddListener(Close_btn);
     }
     public void ShowDiaResearch() {
+        if (Messagebox != null)
+            GameObject.Destroy(Messagebox);
         Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox_r");
         Messagebox = GameObject.Instantiate(Messagebox, GameObject.Find("Canvas").transform) as GameObject;
         Messagebox.transform.localScale = new Vector3(1, 1, 1);
@@ -252,6 +257,8 @@ public class Setting : MonoBehaviour {
         Messagebox.GetComponent<MessageBoxControll>().Confirm.onClick.AddListener(Do_clk);
     }
     public void ShowDiaData() {
+        if (Messagebox != null)
+            GameObject.Destroy(Messagebox);
         Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox_r");
         Messagebox = GameObject.Instantiate(Messagebox, GameObject.Find("Canvas").transform) as GameObject;
         Messagebox.transform.localScale = new Vector3(1, 1, 1);
@@ -264,6 +271,7 @@ public class Setting : MonoBehaviour {
         Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
     }
     public void DoMes() {
+
         Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
         Messagebox.GetComponent<MessageBoxControll>().Content.text = "Scanning .. .. ..";
     }
@@ -277,11 +285,13 @@ public class Setting : MonoBehaviour {
         setPlayers(IPs);
         PrintINFO();
         GameObject.Destroy(Messagebox);
+        Messagebox = null;
 
     }
     public void Close_btn() {
         //string a = _ajc.Call<string>("startPingService", getsubnet());
         GameObject.Destroy(Messagebox);
+        Messagebox = null;
     }
     public void setPlayers(string scannresult) {
         Data.playerIP.Clear();
