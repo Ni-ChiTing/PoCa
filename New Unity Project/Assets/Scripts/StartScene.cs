@@ -81,6 +81,8 @@ public class StartScene : MonoBehaviour
         Data.IamHost = true;
 
         if (string.IsNullOrEmpty(Name.text) || Name.text == "Done" ){
+            if (Messagebox != null)
+                GameObject.Destroy(Messagebox);
             Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox");
             Messagebox = GameObject.Instantiate(Messagebox, GameObject.Find("Canvas").transform) as GameObject;
             Messagebox.transform.localScale = new Vector3(1, 1, 1);
@@ -112,6 +114,8 @@ public class StartScene : MonoBehaviour
             }
             else
             {
+                if (Messagebox != null)
+                    GameObject.Destroy(Messagebox);
                 Messagebox = (GameObject)Resources.Load("Simple UI/MessageBox");
                 Messagebox = GameObject.Instantiate(Messagebox, GameObject.Find("Canvas").transform) as GameObject;
                 Messagebox.transform.localScale = new Vector3(1, 1, 1);
@@ -128,6 +132,7 @@ public class StartScene : MonoBehaviour
     }
     public void Close_btn() {
         GameObject.Destroy(Messagebox);
+        Messagebox = null;
     }
     public void Start()
     {
