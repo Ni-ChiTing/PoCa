@@ -56,16 +56,26 @@ public class GameServerControll : MonoBehaviour {
     }
     public void ServerSendClient(string SsendStr) //default send player 1 use SetClient To Change 
     {
+        print("Single Send  = " + SsendStr + "to" + SclientEnd.ToString());
         SsendData = new byte[1024];
         SsendData = Encoding.ASCII.GetBytes(SsendStr);
         Ssocket.SendTo(SsendData, SsendData.Length, SocketFlags.None, SclientEnd);
     }
-    public void ServerSendAllClient(string sendStr) //Send All Client but not test 
+    public void ServerSendAllClient(string SsendStr) //Send All Client but not test 
     {
-        SsendData = new byte[1024];
-        SsendData = Encoding.ASCII.GetBytes(sendStr);
-        EndPoint clientEnds = new IPEndPoint(IPAddress.Any, 0);
-        Ssocket.SendTo(SsendData, SsendData.Length, SocketFlags.None, clientEnds);
+        print("Send  = " + SsendStr);
+        for ( int i = 1; i <Data.PlayerNumber; ++i)
+        {
+            print("Send IP is " + Data.playerIP[i]);
+            SetClientSend(Data.playerIP[i]);
+            ServerSendClient(SsendStr);
+            
+        }
+        SetClientSend(Data.playerIP[1]);
+        //SsendData = new byte[1024];
+       // SsendData = Encoding.ASCII.GetBytes(sendStr);
+       // EndPoint clientEnds = new IPEndPoint(IPAddress.Any, 0);
+       // Ssocket.SendTo(SsendData, SsendData.Length, SocketFlags.None, clientEnds);
     }
 
     public void SetClientSend(string IP) // change to send other player
@@ -437,7 +447,7 @@ public class GameServerControll : MonoBehaviour {
 
         SsendStr = GetNowHandCard_ + "," + Data.players[0];
         ServerSendClient(SsendStr);
-        */
+        
         Data.MyName = "sss";
         Data.players.Add("sss");
         SetInitCard();
@@ -450,13 +460,22 @@ public class GameServerControll : MonoBehaviour {
         PrintAllHandCard();
         print("--------------Discard----------------");
         DiscardPlayerCard(Data.MyName, 0);
-        PrintAllHandCard();
+        PrintAllHandCard();*/
+        for (int i = 0; i< Data.playerIP.Count; ++i)
+        {
+            print("Player ip = " + Data.playerIP[i]);
+        }
+        ServerSendClient("SSS");
+        ServerSendAllClient("AAAAA");
+        ServerSendClient(WrapAllCard());
+
     }
     // Update is called once per frame
     void Update() {
+        /*
         if (!haveGive && Data.IamHost) {
             haveGive = true;
             ServerSendAllClient(WrapAllCard());
-        }
+        }*/
     }
 }

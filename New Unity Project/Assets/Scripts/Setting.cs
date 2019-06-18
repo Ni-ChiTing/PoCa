@@ -275,18 +275,29 @@ public class Setting : MonoBehaviour {
         Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
         Messagebox.GetComponent<MessageBoxControll>().Content.text = "Scanning .. .. ..";
     }
-    public void Do_clk() {
+    public void Do_clk()
+    {
         //bool success23 = _ajc.Call<bool>("showToast", "wait search!!");
-
         //DoMes();
+        Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
+        Messagebox.GetComponent<MessageBoxControll>().Content.text = "Scanning ...";
+        StartCoroutine(Example());
+        //PrintINFO();
+        //doMes = 0;
+        //GameObject.Destroy(Messagebox);
+    }
+
+    IEnumerator Example()
+    {
+        print("waiting");
+        yield return new WaitForSeconds(1);
         IPs = _ajc.Call<string>("startPingService", getsubnet());
         Debug.Log(IPs);
         PlayerCount = 0;
         setPlayers(IPs);
-        PrintINFO();
-        GameObject.Destroy(Messagebox);
+        print("waiting done");
+        GameManager.Destroy(Messagebox);
         Messagebox = null;
-
     }
     public void Close_btn() {
         //string a = _ajc.Call<string>("startPingService", getsubnet());
@@ -333,27 +344,44 @@ public class Setting : MonoBehaviour {
     void SocketReceive() {
         string data = "";
         recvData = new byte[1024];
-        recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
-        print("message from: " + serverEnd.ToString());
-        data = serverEnd.ToString();
-        string[] realip = data.Split(':');
-        Data.playerIP.Add(realip[0]);
-        recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
-        data += "," + recvStr;
-        if (PlayerCount == 0) {
-            player2.text = recvStr;
-            //++PlayerCount;
-        } else if (PlayerCount == 1) {
-            player3.text = recvStr;
-            //++PlayerCount;
-        } else if (PlayerCount == 2) {
-            player4.text = recvStr;
+        try
+        {
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            print("message from: " + serverEnd.ToString());
+            data = serverEnd.ToString();
+            string[] realip = data.Split(':');
+            Data.playerIP.Add(realip[0]);
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            data += "," + recvStr;
+            if (PlayerCount == 0)
+            {
+                player2.text = recvStr;
+                //++PlayerCount;
+            }
+            else if (PlayerCount == 1)
+            {
+                player3.text = recvStr;
+                //++PlayerCount;
+            }
+            else if (PlayerCount == 2)
+            {
+                player4.text = recvStr;
 
-        } else {
-            Debug.Log("player is full");
+            }
+            else
+            {
+                Debug.Log("player is full");
+            }
+            ++PlayerCount;
+
+            print(recvStr);
         }
-        ++PlayerCount;
-        print(recvStr);
+        catch (SocketException e)
+        {
+            print("Not Resepond!!");
+        }
+        
+        
         /*
         while (true)
         {
