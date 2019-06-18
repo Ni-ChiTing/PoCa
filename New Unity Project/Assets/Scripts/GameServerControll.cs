@@ -29,6 +29,8 @@ public class GameServerControll : MonoBehaviour {
     int recvLen;
     Thread connectThread;
 
+    bool haveGive = false;
+
     const string TakeCard_ = "T";
     const string AddCardFromTable_ = "A";
     const string DiscardCard_ = "D";
@@ -211,7 +213,7 @@ public class GameServerControll : MonoBehaviour {
     }
     public string WrapAllCard()
     {
-        string card = "";
+        string card = GetAllCard_ + ",";
         for (int i = 0; i < 52; ++i)
         {
             if ( i == 51)
@@ -225,7 +227,7 @@ public class GameServerControll : MonoBehaviour {
     public void UnwrapAllCard(string card)
     {
         string[] sp = card.Split(',');
-        for (int i = 0; i < sp.Length; ++i)
+        for (int i = 1; i < sp.Length; ++i)
         {
             Data.Cards[i] = int.Parse(sp[i]);
         }
@@ -287,12 +289,13 @@ public class GameServerControll : MonoBehaviour {
                     print("Add Card From Tabel");
                 } else if (r[i] == GetNowHandCard_) {
                     print("Someone's Hand Card");
-
                 }else if (r[i] == GetAllCard_)
                 {
                     print("Get All Card");
+                    UnwrapAllCard(recv);
+                    AllCardCon.allCardCon.StartDistribute(0);
+                    Data.waiting = false;
                 }
-
             }
         }
     }
@@ -312,31 +315,20 @@ public class GameServerControll : MonoBehaviour {
         Data.PlayerHostCard.Clear();
     }
     public void SetInitCard() {
-        System.Random rand = new System.Random();
-        for (int i = 0; i < 52; ++i)
-            Data.Cards[i] = i;
-        for (int i = 0; i < 52; i++) {
-            int iTarget = UnityEngine.Random.Range(0, 52);
-            int iCardTemp = Data.Cards[i];
-            Data.Cards[i] = Data.Cards[iTarget];
-            Data.Cards[iTarget] = iCardTemp;
-        }
-        int cardnum = Data.PlayerCardNumber * Data.PlayerNumber;
-        print("Card num = " + cardnum.ToString());
-        for (int i = 0; i < cardnum; ++i) {
-            print(i % (Data.PlayerNumber));
-            if (i % (Data.PlayerNumber) == 0) {
-                Data.PlayerHostCard.Add(Data.Cards[i]);
-            } else if (i % (Data.PlayerNumber) == 1) {
-                Data.PlayerOneCard.Add(Data.Cards[i]);
-            } else if (i % (Data.PlayerNumber) == 2) {
-                Data.PlayerTwoCard.Add(Data.Cards[i]);
-            } else if (i % (Data.PlayerNumber) == 3) {
-                Data.PlayerThreeCard.Add(Data.Cards[i]);
+        if (Data.IamHost)
+        {
+            System.Random rand = new System.Random();
+            int iTarget = 0, iCardTemp = 0;
+            for (int i = 0; i < 52; i++)
+                Data.Cards[i] = i;
+            for (int i = 0; i < 52; i++)
+            {
+                iTarget = UnityEngine.Random.Range(0, 52);
+                iCardTemp = Data.Cards[i];
+                Data.Cards[i] = Data.Cards[iTarget];
+                Data.Cards[iTarget] = iCardTemp;
             }
         }
-        Data.NowCardIndex = cardnum;
-
     }
     public void DiscardPlayerCard(string name, int index) //To do discard card
     {
@@ -462,6 +454,9 @@ public class GameServerControll : MonoBehaviour {
     }
     // Update is called once per frame
     void Update() {
-
+        if (!haveGive && Data.IamHost) {
+            haveGive = true;
+            ServerSendAllClient(WrapAllCard());
+        }
     }
 }

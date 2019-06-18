@@ -50,27 +50,9 @@ public class AllCardCon : MonoBehaviour
         mId = 0;
         askUI.SetActive(false);
         GameObject.Find("ani_Text_Button").GetComponent<Text>().text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
-
-        if (Data.IamHost)
-        {
-            //order = new int[52];
-            Random rand = new Random();
-            int iTarget = 0, iCardTemp = 0;
-            for (int i = 0; i < 52; i++)
-                Data.Cards[i] = i;
-            for (int i = 0; i < 52; i++)
-            {
-                iTarget = UnityEngine.Random.Range(0, 52);
-                iCardTemp = Data.Cards[i];
-                Data.Cards[i] = Data.Cards[iTarget];
-                Data.Cards[iTarget] = iCardTemp;
-            }
-            Data.waiting = false;
-        }
     }
 
-    void StartDistribute(int startPlayer) {
-
+    public void StartDistribute(int player) {
         if (Data.NeedAnimation)
         {
             flying = Data.PlayerCardNumber * Data.PlayerNumber;
@@ -88,7 +70,6 @@ public class AllCardCon : MonoBehaviour
                 }
             }
         }
-
     }
 
     void distribute()
@@ -105,7 +86,7 @@ public class AllCardCon : MonoBehaviour
 
     void Update()
     {
-        if (flying > 0)
+        if (flying > 0 || Data.waiting)
             return;
 
         if (mId == nextPlayerCon.player)
