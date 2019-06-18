@@ -245,7 +245,5 @@ public class ClientConnect : MonoBehaviour
         IfReset = false;
     }
 
-    public void resetBtn() {
 
-    }
 }
