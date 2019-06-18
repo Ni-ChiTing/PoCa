@@ -26,6 +26,7 @@ public class ClientConnect : MonoBehaviour
     int UdpPort = 10230;
     bool IfCon = false;
     bool GO = false;
+    bool IfReset = false;
     enum InfoState { HostName, PlayerNumber, PlayerCardNumber, TableCardNumber, NeedDrawCard, NeedAnimation, Players, Done };
     InfoState state;
     //初始化
@@ -125,6 +126,11 @@ public class ClientConnect : MonoBehaviour
         SocketQuit();
 
     }
+    public void Reset_clk()
+    {
+        IfCon = false;
+        IfReset = true;
+    }
     void SocketReceive()
     {
         recvData = new byte[1024];
@@ -214,6 +220,11 @@ public class ClientConnect : MonoBehaviour
             SceneManager.LoadScene(2);
 
         }
+        if (IfReset)
+        {
+            SocketQuit();
+
+        }
             
     }
     public void PrintINFO()
@@ -230,5 +241,7 @@ public class ClientConnect : MonoBehaviour
     void OnApplicationQuit()
     {
         SocketQuit();
+        InitSocket();
+        IfReset = false;
     }
 }
