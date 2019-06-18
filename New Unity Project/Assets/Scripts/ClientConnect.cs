@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,7 +16,7 @@ public class ClientConnect : MonoBehaviour
     public Text WaitText;
     
     Socket socket; //socket
-    EndPoint clientEnd; //client
+    //EndPoint clientEnd; //client
     IPEndPoint ipEnd; //port
     string recvStr; //receive string
     string sendStr; //send string
@@ -29,18 +30,133 @@ public class ClientConnect : MonoBehaviour
     bool IfReset = false;
     enum InfoState { HostName, PlayerNumber, PlayerCardNumber, TableCardNumber, NeedDrawCard, NeedAnimation, Players, Done };
     InfoState state;
+    UdpClient udpClient = null;
+    EndPoint serverEnd;
     //初始化
     void InitSocket()
     {
-        ipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
+        IfCon = false;
+        string hostName = System.Net.Dns.GetHostName();
+        string ipBase = System.Net.Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        ipEnd = new IPEndPoint(IPAddress.Parse(Data.HostIP), UdpPort);
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        socket.Bind(ipEnd);
+        socket.Bind(new IPEndPoint(IPAddress.Parse(ipBase), UdpPort));
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        clientEnd = (EndPoint)sender;
-        print("waiting for UDP dgram");
-        connectThread = new Thread(new ThreadStart(SocketReceive));
+        serverEnd = (EndPoint)sender;
+        print("waiting for sending UDP dgram");
+        connectThread = new Thread(new ThreadStart(ClientReceiveServer));
         connectThread.Start();
     }
+    public void ClientSendServer(string s)
+    {
+        sendData = new byte[1024];
+        sendData = Encoding.ASCII.GetBytes(s);
+        socket.SendTo(sendData, sendData.Length, SocketFlags.None, ipEnd);
+    }
+    public void ClientReceiveServer()
+    {
+        
+        while (true)
+        {
+            ClientSendServer(Data.MyName);
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            print("message from: " + serverEnd.ToString());
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            print(recvStr);
+            if (recvStr == "ACK")
+            {
+                break;
+            }
+            
+        }
+        print("GetName");
+        state = InfoState.HostName;
+        while (state != InfoState.Done)
+        {
+            print("Client Now State = "+state);
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            print("message from: " + serverEnd.ToString());
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            print(recvStr);
+            switch (state)
+            {
+                case InfoState.HostName:
+                    Data.HostName = recvStr;
+                    state = InfoState.NeedAnimation;
+                    break;
+                case InfoState.NeedAnimation:
+                    Data.NeedAnimation = bool.Parse(recvStr);
+                    state = InfoState.NeedDrawCard;
+                    break;
+                case InfoState.NeedDrawCard:
+                    Data.NeedDrawCard = bool.Parse(recvStr);
+                    state = InfoState.PlayerCardNumber;
+                    break;
+                case InfoState.PlayerCardNumber:
+                    Data.PlayerCardNumber = int.Parse(recvStr);
+                    state = InfoState.PlayerNumber;
+                    break;
+                case InfoState.PlayerNumber:
+                    Data.PlayerNumber = int.Parse(recvStr);
+                    state = InfoState.Players;
+                    break;
+                case InfoState.Players:
+                    if (recvStr == "DONE")
+                        state = InfoState.Done;
+                    else
+                    {
+                        Data.players.Add(recvStr);
+                        state = InfoState.Players;
+                    }
+                    break;
+            }
+            ClientSendServer("ACK");
+
+        }
+        print("DATA GET DOne");
+        while (true)
+        {
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            print(recvStr);
+            if (recvStr == "GO")
+            {
+                GO = true;
+#if DEBUG
+                ClientSendServer("ACK");
+#endif
+                break;
+            }
+        }
+        SocketQuit();
+    }
+    public void recvUdpBroadcast()
+    {
+        print("recvUdpBroadcast()");
+            
+        UdpClient udpClient = new UdpClient();
+        udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, UdpPort));
+        udpClient.Client.EnableBroadcast = true;
+
+        var from = new IPEndPoint(0, 0);
+        Task.Run(() => {
+            while (true)
+            {
+                var recvBuffer = udpClient.Receive(ref from);
+                Data.HostIP = (Encoding.UTF8.GetString(recvBuffer));
+                IfCon = true;
+                break;
+            }
+        });
+        
+        
+        
+    }
+
+    /*
     void GetData()
     {
         IfCon = false;
@@ -125,14 +241,18 @@ public class ClientConnect : MonoBehaviour
         }
         SocketQuit();
 
-    }
+    }*/
     public void Reset_clk()
     {
-        IfCon = false;
-        IfReset = true;
+        WaitText.text = "Waiting ....";
+        SocketQuit();
+        state = InfoState.HostName;
+        recvUdpBroadcast();
     }
+    /*
     void SocketReceive()
     {
+        
         recvData = new byte[1024];
         recvLen = socket.ReceiveFrom(recvData, ref clientEnd);
         print("message from: " + clientEnd.ToString());
@@ -141,7 +261,7 @@ public class ClientConnect : MonoBehaviour
         Data.HostIP = realip[0];
         print("host IP = "+ Data.HostIP);
         recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
-        print(recvStr);
+        print(recvStr)
         sendStr = Data.MyName;
         SocketSend(sendStr);
         IfCon = true;
@@ -186,11 +306,11 @@ public class ClientConnect : MonoBehaviour
                 GO = true;
                 break;
             }
-        }*/
+        }
         SocketQuit();
         print("Name Done");
     }
-
+*/
     void SocketQuit()
     {
         if (connectThread != null)
@@ -204,28 +324,23 @@ public class ClientConnect : MonoBehaviour
     }
     void Start()
     {
-        InitSocket();
+        recvUdpBroadcast();
+        //InitSocket();
     }
     // Update is called once per frame
     void Update()
     {
         if (IfCon)
         {
+            InitSocket();
             WaitText.text = "Connect to server , wating Host";
-            GetData();
+           // GetData();
         }
         if (GO)
         {
             PrintINFO();
             SceneManager.LoadScene(2);
 
-        }
-        if (IfReset)
-        {
-            SocketQuit();
-            WaitText.text = "Waiting .. .. ..";
-            InitSocket();
-            IfReset = false;
         }
 
         if (Input.GetKeyDown(KeyCode.Escape)) 

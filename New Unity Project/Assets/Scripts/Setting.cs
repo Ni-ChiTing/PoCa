@@ -6,6 +6,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -27,7 +28,7 @@ public class Setting : MonoBehaviour {
     string IPs;
     int PlayerCount;
     Socket socket;
-    EndPoint serverEnd;
+    EndPoint Remote;
     IPEndPoint ipEnd;
     string recvStr;
     string sendStr;
@@ -38,6 +39,8 @@ public class Setting : MonoBehaviour {
     int UdpPort = 10230;
     //Object thisLock = new Object();
     bool IfGo = false;
+    bool IfBroadcast = true;
+    bool IfGetName = true;
     enum InfoState { HostName, PlayerNumber, PlayerCardNumber, TableCardNumber, NeedDrawCard, NeedAnimation, Players, Done };
     InfoState state;
     /*SocketSend(Data.HostName);
@@ -58,7 +61,31 @@ public class Setting : MonoBehaviour {
         ipBase = ipParts[0] + "." + ipParts[1] + "." + ipParts[2];
         return ipBase;
     }
+    public void sendUdpBroadcast()
+    {
+        print("sendUdpBroadcast()");
+        string hostName = System.Net.Dns.GetHostName();
+        string ipBase = System.Net.Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        print(ipBase);
+        UdpClient udpClient = new UdpClient();
+        udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, UdpPort));
+        udpClient.Client.EnableBroadcast = true;
+        //var data = Encoding.UTF8.GetBytes(ipBase);
+        //udpClient.Send(data, data.Length, "192.168.43.255", PORT);
+
+        Task.Run(() => {
+            while (IfBroadcast)
+            {
+                var data = Encoding.UTF8.GetBytes(ipBase);
+                udpClient.Send(data, data.Length, getsubnet() + ".255", UdpPort);
+                Thread.Sleep(1000);
+            }
+        });
+
+    }
+
     public void Start() {
+        
         _ajc = new AndroidJavaObject("com.androidforunity.UnityFuntion");
         player2 = GameObject.Find("Canvas/conn/connect1/Text").GetComponent<Text>();
         player3 = GameObject.Find("Canvas/conn/connect2/Text").GetComponent<Text>();
@@ -78,8 +105,16 @@ public class Setting : MonoBehaviour {
         playerNumDropDown.onValueChanged.AddListener(delegate { playerNumber_onChange(); });
 
         gameMode_onChange();
+        sendUdpBroadcast();
+        InitSocket();
     }
     public void startBtn() {
+        IfBroadcast = false;
+        IfGetName = false;
+        for (int i = 0; i< Data.playerIP.Count; ++i)
+        {
+            print("Player ip = " + Data.playerIP[i]);
+        }
         int temp;
         Data.GameName = game_name.text;
         Data.PlayerNumber = int.Parse(player_number.text); ;
@@ -96,7 +131,12 @@ public class Setting : MonoBehaviour {
         } else {
             Data.PlayerCardNumber = int.Parse(player_card_number.text);
             ShowDiaData();
-            StartTransmitData();
+ 
+            InitTransSocket();
+            for (int i = 1; i < Data.playerIP.Count; ++i)
+            {
+                StartTransmitData(Data.playerIP[i]);
+            }
             GameObject.Destroy(Messagebox);
             Messagebox = null;
             SendStart();
@@ -104,6 +144,115 @@ public class Setting : MonoBehaviour {
         }
 
     }
+    void InitTransSocket()
+    {
+        ipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        //socket.ReceiveTimeout = 1000;
+        socket.Bind(ipEnd);
+        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+        Remote = (EndPoint)sender;
+        print("waiting for sending UDP dgram");
+        //SocketSend("hello");
+    }
+    public void StartTransmitData(string ip)
+    {
+        int index = 0;
+        state = InfoState.HostName;
+        while (state != InfoState.Done)
+        {
+            print("server state = " + state);
+            string str = "";
+            switch (state)
+            {
+                case InfoState.HostName:
+                    str = Data.HostName;
+                    break;
+                case InfoState.NeedAnimation:
+                    str = Data.NeedAnimation.ToString();
+                    break;
+                case InfoState.NeedDrawCard:
+                    str = Data.NeedDrawCard.ToString();
+                    break;
+                case InfoState.PlayerCardNumber:
+                    str = Data.PlayerCardNumber.ToString();
+                    break;
+                case InfoState.PlayerNumber:
+                    str = Data.PlayerNumber.ToString();
+                    break;
+                case InfoState.Players:
+                    str = Data.players[index];
+                    break;
+            }
+            ServerSendClient(str,ip);
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref Remote);
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+            switch (state)
+            {
+                case InfoState.HostName:
+                    if (recvStr == "ACK")
+                        state = InfoState.NeedAnimation;
+                    break;
+                case InfoState.NeedAnimation:
+                    if (recvStr == "ACK")
+                        state = InfoState.NeedDrawCard;
+                    break;
+                case InfoState.NeedDrawCard:
+                    if (recvStr == "ACK")
+                        state = InfoState.PlayerCardNumber;
+                    break;
+                case InfoState.PlayerCardNumber:
+                    if (recvStr == "ACK")
+                        state = InfoState.PlayerNumber;
+                    break;
+                case InfoState.PlayerNumber:
+                    if (recvStr == "ACK")
+                        state = InfoState.Players;
+                    break;
+                case InfoState.Players:
+                    if (index == Data.PlayerNumber - 1)
+                    {
+                        state = InfoState.Done;
+                    }
+                    else
+                    {
+                        print("index" + index.ToString());
+                        ++index;
+                        state = InfoState.Players;
+                    }
+                    break;
+            }
+        }
+        ServerSendClient("DONE",ip);
+        print("SSS");
+    }
+    public void SendStart()
+    {
+        print("START SEND");
+        for (int i = 1; i < Data.playerIP.Count; ++i)
+        {
+                //print("waiting for sending UDP dgram");
+            ServerSendClient("GO",Data.playerIP[i]);
+#if DEBUG
+            ReceiveStartACK(i);
+#endif
+        }
+    }
+    public void ReceiveStartACK(int i)
+    {
+        recvData = new byte[1024];
+        recvLen = socket.ReceiveFrom(recvData, ref Remote);
+        recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+        while (recvStr != "ACK")
+        {
+            ServerSendClient("GO", Data.playerIP[i]);
+            recvData = new byte[1024];
+            recvLen = socket.ReceiveFrom(recvData, ref Remote);
+            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+        }
+    }
+    /*
     public void StartTransmitData() {
         string[] ipParts = IPs.Split(',');
         string hostName = System.Net.Dns.GetHostName();
@@ -223,9 +372,9 @@ public class Setting : MonoBehaviour {
             }
 
         }
-    }
+    }*/
     public void Player_btn() {
-        ShowDiaResearch();
+        Resetplayer();
         //GameObject.Destroy(Messagebox);
     }
     public void ShowDia(string title, string context) {
@@ -270,40 +419,49 @@ public class Setting : MonoBehaviour {
         Messagebox.GetComponent<MessageBoxControll>().Close.onClick.AddListener(Close_btn);
         Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
     }
-    public void DoMes() {
-
-        Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
-        Messagebox.GetComponent<MessageBoxControll>().Content.text = "Scanning .. .. ..";
-    }
+    
     public void Do_clk()
     {
+        
+        /*
         //bool success23 = _ajc.Call<bool>("showToast", "wait search!!");
         //DoMes();
         Messagebox.GetComponent<MessageBoxControll>().Confirm.gameObject.SetActive(false);
         Messagebox.GetComponent<MessageBoxControll>().Content.text = "Scanning ...";
-        StartCoroutine(Example());
-        //PrintINFO();
-        //doMes = 0;
-        //GameObject.Destroy(Messagebox);
-    }
+        //StartCoroutine(Example());
 
-    IEnumerator Example()
-    {
-        print("waiting");
-        yield return new WaitForSeconds(1);
-        IPs = _ajc.Call<string>("startPingService", getsubnet());
+        
         Debug.Log(IPs);
         PlayerCount = 0;
         setPlayers(IPs);
         print("waiting done");
         GameManager.Destroy(Messagebox);
         Messagebox = null;
+        //PrintINFO();
+        //doMes = 0;
+        //GameObject.Destroy(Messagebox);
+        */
     }
+    /*
+    IEnumerator Example()
+    {
+        print("waiting");
+        yield return new WaitForSeconds(1);
+        //IPs = _ajc.Call<string>("startPingService", getsubnet());
+        
+        Debug.Log(IPs);
+        PlayerCount = 0;
+        setPlayers(IPs);
+        print("waiting done");
+        GameManager.Destroy(Messagebox);
+        Messagebox = null;
+    }*/
     public void Close_btn() {
         //string a = _ajc.Call<string>("startPingService", getsubnet());
         GameObject.Destroy(Messagebox);
         Messagebox = null;
     }
+    /*
     public void setPlayers(string scannresult) {
         Data.playerIP.Clear();
         Data.players.Clear();
@@ -320,104 +478,110 @@ public class Setting : MonoBehaviour {
             }
 
         }
-    }
+    }*/
 
+    void Resetplayer()
+    {
+        IfGetName = true;
+        Data.playerIP.Clear();
+        Data.players.Clear();
+        string hostName = System.Net.Dns.GetHostName();
+        string ipBase = System.Net.Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        Data.players.Add(Data.MyName);
+        Data.playerIP.Add(ipBase);
+        player2.text = "Player 1";
+        player3.text = "Player 2";
+        player4.text = "Player 3";
+        PlayerCount = 0;
+    }
     //初始化
-    void InitSocket(string ip) {
-        ipEnd = new IPEndPoint(IPAddress.Parse(ip), UdpPort);
+    void InitSocket() {
+        ipEnd = new IPEndPoint(IPAddress.Any, UdpPort);
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        socket.ReceiveTimeout = 1000;
+        //socket.ReceiveTimeout = 1000;
+        socket.Bind(ipEnd);
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-        serverEnd = (EndPoint)sender;
+        Remote = (EndPoint)sender;
         print("waiting for sending UDP dgram");
-        SocketSend("hello");
-        SocketReceive();
+        //SocketSend("hello");
+        connectThread = new Thread(new ThreadStart(SocketReceive));
+        connectThread.Start();
     }
 
-
-    void SocketSend(string sendStr) {
-        sendData = new byte[1024];
+    /*
+        void SocketSend(string sendStr) {
+            sendData = new byte[1024];
+            sendData = Encoding.ASCII.GetBytes(sendStr);
+            socket.SendTo(sendData, sendData.Length, SocketFlags.None, ipEnd);
+        }
+        */
+    public void ServerSendClient(string sendStr, string ip) //default send player 1 use SetClient To Change 
+    {
+        print("send -> " + ip);
+        EndPoint point = new IPEndPoint(IPAddress.Parse(ip), UdpPort);
+        byte[] sendData = new byte[1024];
         sendData = Encoding.ASCII.GetBytes(sendStr);
-        socket.SendTo(sendData, sendData.Length, SocketFlags.None, ipEnd);
+        socket.SendTo(sendData, sendData.Length, SocketFlags.None, point);
     }
-
     void SocketReceive() {
         string data = "";
         recvData = new byte[1024];
-        try
+        string hostName = System.Net.Dns.GetHostName();
+        string ipBase = System.Net.Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        Data.players.Add(Data.MyName);
+        Data.playerIP.Add(ipBase);
+        while (IfGetName)
         {
-            recvLen = socket.ReceiveFrom(recvData, ref serverEnd);
-            print("message from: " + serverEnd.ToString());
-            data = serverEnd.ToString();
+            recvLen = socket.ReceiveFrom(recvData, ref Remote);
+            data = Remote.ToString();
             string[] realip = data.Split(':');
-            Data.playerIP.Add(realip[0]);
-            recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
-            data += "," + recvStr;
-            if (PlayerCount == 0)
+            if (ipBase != realip[0])
             {
-                player2.text = recvStr;
-                //++PlayerCount;
-            }
-            else if (PlayerCount == 1)
-            {
-                player3.text = recvStr;
-                //++PlayerCount;
-            }
-            else if (PlayerCount == 2)
-            {
-                player4.text = recvStr;
-
-            }
-            else
-            {
-                Debug.Log("player is full");
-            }
-            ++PlayerCount;
-
-            print(recvStr);
-        }
-        catch (SocketException e)
-        {
-            print("Not Resepond!!");
-        }
-        
-        
-        /*
-        while (true)
-        {
-            if (IfGo)
-            {
-                SocketSend("INFO");
-                SocketSend(Data.HostName);
-                SocketSend(Data.PlayerNumber.ToString());
-                SocketSend(Data.PlayerCardNumber.ToString());
-                SocketSend(Data.TableCardNumber.ToString());
-                SocketSend(Data.NeedDrawCard.ToString());
-                SocketSend(Data.NeedAnimation.ToString());
-                foreach (var i in Data.players)
+                print("message from: " + Remote.ToString());
+                recvStr = Encoding.ASCII.GetString(recvData, 0, recvLen);
+                if (PlayerCount == 0)
                 {
-                    SocketSend(i);
+                    player2.text = recvStr;
+                    ServerSendClient("ACK", realip[0]);
+                    //++PlayerCount;
+                    Data.playerIP.Add(realip[0]);
+                    ++PlayerCount;
                 }
-                SocketSend("done");
-                SocketSend("GO");
-                break;
+                else if (PlayerCount == 1)
+                {
+                    player3.text = recvStr;
+                    ServerSendClient("ACK", realip[0]);
+                    ++PlayerCount;
+                    Data.playerIP.Add(realip[0]);
+                    //++PlayerCount;
+                }
+                else if (PlayerCount == 2)
+                {
+                    player4.text = recvStr;
+                    ServerSendClient("ACK", realip[0]);
+                    ++PlayerCount;
+                    Data.playerIP.Add(realip[0]);
+                }
+                else
+                {
+                    Debug.Log("player is full");
+                    ServerSendClient("FULL", realip[0]);
+                }
+                print(recvStr);
             }
-            else
-            {
-                SocketSend("Don't GO");
-            }
-            Thread.Sleep(500);
-        }*/
+        }
         SocketQuit();
+            
     }
+        
+   
 
     void SocketQuit() {
-        /*
         if (connectThread != null)
         {
             connectThread.Interrupt();
             connectThread.Abort();
-        }*/
+        }
         if (socket != null)
             socket.Close();
     }
@@ -443,6 +607,7 @@ public class Setting : MonoBehaviour {
     }
     void OnApplicationQuit() {
         SocketQuit();
+        IfBroadcast = false;
     }
 
     private void gameMode_onChange() {
@@ -471,7 +636,7 @@ public class Setting : MonoBehaviour {
         };
         updateSetting();
     }
-
+    
     private void playerNumber_onChange() {
         print("playerNumber_onChange(): " + player_number.text);
         updateSetting();
