@@ -228,6 +228,9 @@ public class ClientConnect : MonoBehaviour
             IfReset = false;
         }
 
+        if (Input.GetKeyDown(KeyCode.Escape)) 
+            SceneManager.LoadScene(0);
+
     }
     public void PrintINFO()
     {
