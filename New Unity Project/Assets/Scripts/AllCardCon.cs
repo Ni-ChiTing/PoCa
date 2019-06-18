@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class AllCardCon : MonoBehaviour
 {
-    public static int mId;
+    public int mId;
     public Transform[] players;
     public Transform table;
 
@@ -52,7 +52,8 @@ public class AllCardCon : MonoBehaviour
         GameObject.Find("ani_Text_Button").GetComponent<Text>().text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
     }
 
-    public void StartDistribute(int player) {
+    public void StartDistribute() {
+        print("start distribute");
         if (Data.NeedAnimation)
         {
             flying = Data.PlayerCardNumber * Data.PlayerNumber;
@@ -89,7 +90,7 @@ public class AllCardCon : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
             SceneManager.LoadScene(0);
 
-        if (flying > 0 || Data.waiting)
+        if (flying > 0)
             return;
 
         if (mId == nextPlayerCon.player)

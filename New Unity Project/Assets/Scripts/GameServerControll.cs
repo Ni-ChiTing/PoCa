@@ -37,6 +37,7 @@ public class GameServerControll : MonoBehaviour {
     const string DiscardCard_ = "D";
     const string GetNowHandCard_ = "G";
     const string GetAllCard_ = "AC";
+    const string Info_ = "I";
     const string Spade = "S";
     const string Heart = "H";
     const string Diamond = "DI";
@@ -61,6 +62,7 @@ public class GameServerControll : MonoBehaviour {
     }
 
     public void ServerSendAllClient(string send_msg) {
+        print("send " + send_msg);
         var data = Encoding.UTF8.GetBytes(send_msg);
         string subnet_s = getsubnet();
         udpClient.Send(data, data.Length, subnet_s, UdpPort);
@@ -93,7 +95,8 @@ public class GameServerControll : MonoBehaviour {
             var from = new IPEndPoint(0, 0);
             while (true) {
                 var recvBuffer = udpClient.Receive(ref from);
-                print(Encoding.UTF8.GetString(recvBuffer));
+                print("c r s " + Encoding.UTF8.GetString(recvBuffer));
+                ResolveMSG(Encoding.UTF8.GetString(recvBuffer));
             }
         });
     }
@@ -302,10 +305,11 @@ public class GameServerControll : MonoBehaviour {
     public void UnwrapAllCard(string card)
     {
         string[] sp = card.Split(',');
-        for (int i = 1; i < sp.Length; ++i)
+        for (int i = 0; i < 52; ++i)
         {
-            Data.Cards[i] = int.Parse(sp[i]);
+            Data.Cards[i] = int.Parse(sp[i+1]);
         }
+        AllCardCon.allCardCon.StartDistribute();
     }
     public string WrapHandCardToString(string name) // Wrap Hand Card To String 以利server 發送
     {
@@ -354,25 +358,45 @@ public class GameServerControll : MonoBehaviour {
     public void ResolveMSG(string recv) // Can Modify by you
     {
         string[] r = recv.Split(',');
+        print("recv " + recv);
         for (int i = 0; i < r.Length; ++i) {
             if (i == 0) {
-                if (r[i] == DiscardCard_) {
+                if (r[i] == DiscardCard_)
+                {
                     print("Discrd");
-                } else if (r[i] == TakeCard_) {
+                }
+                else if (r[i] == TakeCard_)
+                {
                     print("Take Other's Card");
-                } else if (r[i] == AddCardFromTable_) {
+                }
+                else if (r[i] == AddCardFromTable_)
+                {
                     print("Add Card From Tabel");
-                } else if (r[i] == GetNowHandCard_) {
+                }
+                else if (r[i] == GetNowHandCard_)
+                {
                     print("Someone's Hand Card");
-                }else if (r[i] == GetAllCard_)
+                }
+                else if (r[i] == GetAllCard_)
                 {
                     print("Get All Card");
                     UnwrapAllCard(recv);
-                    AllCardCon.allCardCon.StartDistribute(0);
-                    Data.waiting = false;
+                }
+                else if (r[i] == Info_) {
+                    GetInfo(r);
+
                 }
             }
         }
+    }
+    public void GetInfo(string[] r) {
+        AllCardCon.allCardCon.mId = int.Parse(r[1]);
+        Data.PlayerNumber = int.Parse(r[2]);
+        Data.PlayerCardNumber = int.Parse(r[3]);
+        Data.NeedAnimation = int.Parse(r[4]) == 1;
+        Data.NeedAnimation = int.Parse(r[5]) == 1;
+        print(AllCardCon.allCardCon.mId.ToString() + Data.PlayerNumber.ToString() + Data.PlayerCardNumber.ToString() +  Data.NeedAnimation.ToString() + Data.NeedAnimation.ToString());
+
     }
     public string FindClientIP(string name) {
         int index = Data.players.IndexOf(name);
@@ -494,16 +518,19 @@ public class GameServerControll : MonoBehaviour {
             InitServerSocket();
 
             ServerListenClient();
+           
         } else {
 
-            InitClientSocket();
-            
+            InitClientSocket();            
             ClientReceiveServer();
         }
         PrintAllHandCard();
+        
     }
+
     public void send_click()  // TEST FUNCTION
     {
+
         // SsendStr = "fghfghgh";
         /*SsendStr = TakeCard_+"," + Data.players[0];
         ServerSendClient(SsendStr);
@@ -541,9 +568,18 @@ public class GameServerControll : MonoBehaviour {
         print("3");
         */
         if (Data.IamHost) {
-            ServerSendClient(Data.playerIP[1], "SG_DATA-1");
-            ServerSendAllClient("BC_DATA");
-            ServerSendClient(Data.playerIP[1], "SG_DATA-2");
+            //ServerSendClient(Data.playerIP[1], "SG_DATA-1");
+            //ServerSendAllClient("BC_DATA");
+            //ServerSendClient(Data.playerIP[1], "SG_DATA-2");
+            for (int i = 1; i <= Data.PlayerNumber; i++)
+            {
+                string mesg = Info_ + "," + i.ToString() + "," + Data.PlayerNumber.ToString() + "," + Data.PlayerCardNumber.ToString() + "," +
+                   ((Data.NeedAnimation) ? "1" : "0") + "," + ((Data.NeedDrawCard) ? "1" : "0");
+                print(i.ToString() + mesg);
+                ServerSendClient(Data.playerIP[i], mesg);
+            }
+            AllCardCon.allCardCon.StartDistribute();
+
         } else {
             ClientSendServer("SG_DATA-1");
         }
