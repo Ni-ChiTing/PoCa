@@ -100,7 +100,7 @@ public class AllCardCon : MonoBehaviour
             return;
 
 
-        if (mId > -1)//== Data.nowTurn)
+        if (mId == Data.nowTurn)
         {
             if (Input.GetMouseButtonDown(0))
             {

@@ -48,10 +48,13 @@ public class GameServerControll : MonoBehaviour {
     const string ClientGetInfoReply_ = "R";
     const string GiveCard_ = "GC";
     const string PutOnTable_ = "PT";
+    const string Turn_ = "TU";
 
     UdpClient udpClient;
 
     string lastReceive;
+    public nextPlayerCon nPlayerCon;
+    
 
     //data.playerIP[0] is host
     //data.players[0] is host
@@ -447,6 +450,9 @@ public class GameServerControll : MonoBehaviour {
                         ServerSendAllClient(recv);
                     AllCardCon.allCardCon.PutOnTable(new Vector3(float.Parse(r[2]), 0f, float.Parse(r[3])), int.Parse(r[1]));
                 }
+                else if (r[i] == Turn_) {
+                    nPlayerCon.setPlayer(int.Parse(r[1]));
+                }
             }
         }
     }
@@ -653,5 +659,10 @@ public class GameServerControll : MonoBehaviour {
             haveGive = true;
             ServerSendAllClient(WrapAllCard());
         }*/
+    }
+
+    public void SendNextTurn(int turn) {
+        string mesg = Turn_ + "," + turn.ToString();
+        ServerSendAllClient(mesg);
     }
 }

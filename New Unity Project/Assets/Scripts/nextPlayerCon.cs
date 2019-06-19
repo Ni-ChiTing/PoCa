@@ -13,7 +13,7 @@ public class nextPlayerCon : MonoBehaviour
     public Text[] texts;
 
     public static nextPlayerCon turnCon;
-
+    public GameServerControll gameServerCon;
     
     
     void Awake()
@@ -35,11 +35,16 @@ public class nextPlayerCon : MonoBehaviour
 
     }
 
+    public void setBtn(int p) {
+        gameServerCon.SendNextTurn(p);
+    }
+
     public void setPlayer(int p)
     {
         for (int i = 0; i < 4; i++) {
             btns[i].sprite = waitBtn;
         }
         btns[p].sprite = playerBtn;
+        Data.nowTurn = p;
     }
 }
