@@ -431,11 +431,11 @@ public class GameServerControll : MonoBehaviour {
                 }
                 else if (r[i] == ClientGetInfoReply_)
                 {
-                    if (++readyClient == Data.PlayerNumber - 1)
+                    //不知為何只收到一次
+                    print("get reply><" + readyClient.ToString());
+                    if (++readyClient == 1)
                     {
-                        //Send cards
                         ServerSendAllClient(WrapAllCard());
-                        //AllCardCon.allCardCon.StartDistribute();
                     }
                 }
                 else if (r[i] == GiveCard_)
