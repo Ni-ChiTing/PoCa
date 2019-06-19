@@ -130,19 +130,19 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 10006}
     - Class: 114
-      Script: {instanceID: 10220}
+      Script: {instanceID: 10120}
     - Class: 114
-      Script: {instanceID: 10426}
+      Script: {instanceID: 10222}
     - Class: 114
-      Script: {instanceID: 10458}
+      Script: {instanceID: 10428}
     - Class: 114
-      Script: {instanceID: 10626}
+      Script: {instanceID: 10460}
     - Class: 114
-      Script: {instanceID: 10810}
+      Script: {instanceID: 10628}
     - Class: 114
-      Script: {instanceID: 10826}
+      Script: {instanceID: 10812}
     - Class: 114
-      Script: {instanceID: 18672}
+      Script: {instanceID: 10828}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 124
@@ -334,29 +334,29 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 10006}
     - Class: 114
-      Script: {instanceID: 10194}
+      Script: {instanceID: 10196}
     - Class: 114
-      Script: {instanceID: 10324}
+      Script: {instanceID: 10326}
     - Class: 114
-      Script: {instanceID: 10424}
+      Script: {instanceID: 10426}
     - Class: 114
-      Script: {instanceID: 10434}
+      Script: {instanceID: 10436}
     - Class: 114
-      Script: {instanceID: 10606}
+      Script: {instanceID: 10608}
     - Class: 114
-      Script: {instanceID: 10802}
+      Script: {instanceID: 10804}
     - Class: 114
-      Script: {instanceID: 10810}
-    - Class: 114
-      Script: {instanceID: 10854}
+      Script: {instanceID: 10812}
     - Class: 114
       Script: {instanceID: 10856}
     - Class: 114
-      Script: {instanceID: 10864}
+      Script: {instanceID: 10858}
     - Class: 114
-      Script: {instanceID: 28026}
+      Script: {instanceID: 10866}
     - Class: 114
-      Script: {instanceID: 28030}
+      Script: {instanceID: 27566}
+    - Class: 114
+      Script: {instanceID: 27570}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 124
@@ -421,6 +421,8 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 9554}
     - Class: 114
+      Script: {instanceID: 9556}
+    - Class: 114
       Script: {instanceID: 9560}
     - Class: 114
       Script: {instanceID: 9568}
@@ -430,6 +432,10 @@ ScriptsOnlyBuild:
       Script: {instanceID: 9600}
     - Class: 114
       Script: {instanceID: 9604}
+    - Class: 114
+      Script: {instanceID: 9692}
+    - Class: 114
+      Script: {instanceID: 9724}
     - Class: 114
       Script: {instanceID: 9730}
     - Class: 114
@@ -1021,6 +1027,12 @@ ScriptsOnlyBuild:
     className: SignalTrack
   - hash:
       serializedVersion: 2
+      Hash: 6411b799459171ecd344f392bac70cc2
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: GamePlay
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: Unity.Analytics.Editor.dll
     namespaceName: UnityEditor.Analytics
@@ -1045,7 +1057,7 @@ ScriptsOnlyBuild:
     className: Gem
   - hash:
       serializedVersion: 2
-      Hash: 5261b56b5748c45b61d1a1ef5828337c
+      Hash: 5ff27f0e32b905208ef769ef167c49bc
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: nextPlayerCon
@@ -1129,7 +1141,7 @@ ScriptsOnlyBuild:
     className: HUD
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+      Hash: b49a90e1a90de972295138b6443c9980
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameServerControll
@@ -1225,7 +1237,7 @@ ScriptsOnlyBuild:
     className: TMP_SubMesh
   - hash:
       serializedVersion: 2
-      Hash: 1fb02b0c394babc11a8445af0281dbde
+      Hash: 5533708aeacf2e0ca8f6d980fc3771e1
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: AllCardCon
@@ -1259,16 +1271,10 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
-  - hash:
-      serializedVersion: 2
-      Hash: 1790998af414935a38b391c89cde673d
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: GamePlay
   platform: 13
   scenePathNames:
   - Assets/Scenes/start.unity
   - Assets/Scenes/waiting.unity
   - Assets/Scenes/game.unity
   - Assets/Scenes/setting.unity
-  playerPath: C:/Users/HoeYuan/Desktop/poca.apk
+  playerPath: D:/PoCa/New Unity Project/Poca.apk
