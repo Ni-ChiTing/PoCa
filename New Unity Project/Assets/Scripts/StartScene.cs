@@ -1,4 +1,4 @@
-﻿#define DEBUG //NOT DETECT WIFI and WIFI AP
+﻿//#define DEBUG //NOT DETECT WIFI and WIFI AP
 using System;
 using System.Collections;
 using System.Collections.Generic;

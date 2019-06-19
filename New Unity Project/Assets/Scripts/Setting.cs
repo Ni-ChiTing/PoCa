@@ -1,4 +1,5 @@
-﻿#define DEBUG //如果define 就不會等有ACK才能進入遊戲 最後要不define才確保每個人都收到開始遊戲
+﻿//#define DEBUG //如果define 就不會等有ACK才能進入遊戲 最後要不define才確保每個人都收到開始遊戲
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -131,7 +132,6 @@ public class Setting : MonoBehaviour {
         } else {
             Data.PlayerCardNumber = int.Parse(player_card_number.text);
             ShowDiaData();
- 
             InitTransSocket();
             for (int i = 1; i < Data.playerIP.Count; ++i)
             {

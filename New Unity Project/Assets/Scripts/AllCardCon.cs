@@ -189,7 +189,9 @@ public class AllCardCon : MonoBehaviour
     {
         cardsTrans[card].SetParent(players[player]);
         cardsTrans[card].localRotation = Quaternion.Euler(Vector3.zero);
-        CardPosition(player);
+
+        for (int i = 0; i <Data.PlayerNumber; i++)
+            CardPosition(i);
 
         flying -= 1;
     }
