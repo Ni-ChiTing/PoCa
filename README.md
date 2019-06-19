@@ -18,7 +18,3 @@
 3.Vedio Link :https://drive.google.com/open?id=1x0sUK5euMspwfPmMxYsi_XnDg_AvDdTn
               https://drive.google.com/open?id=1kNysx20H62Ay-kp3G5x-mhc0CBP4jOHG
 
-| First Header  | Second Header |
-| ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
