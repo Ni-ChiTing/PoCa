@@ -6,6 +6,8 @@ using UnityEngine;
 public static class Data
 {
     // Scene start
+    public static int myId;
+    public static int nowTurn = 0;
     public static string MyName ;
     public static bool IamHost = true;
     public static string HostIP = "";

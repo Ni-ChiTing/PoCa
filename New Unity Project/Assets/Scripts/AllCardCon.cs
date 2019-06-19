@@ -31,6 +31,8 @@ public class AllCardCon : MonoBehaviour
     private int givingCard = 0;
     //private int[] order;
 
+    public GameServerControll gameSeverCon;
+
     void Awake()
     {
         allCardCon = this;
@@ -43,19 +45,23 @@ public class AllCardCon : MonoBehaviour
             cardCons[i] = cardsTrans[i].gameObject.AddComponent<CardControl>();
             cardCons[i].cardId = i;
         }
-        
+
     }
 
     void Start() {
         mId = 0;
         askUI.SetActive(false);
         GameObject.Find("ani_Text_Button").GetComponent<Text>().text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
+        nextPlayerCon.turnCon.setPlayer(Data.nowTurn);
     }
 
     public void StartDistribute() {
-        print("start distribute");
+        print("id " + Data.myId);
+
         if (Data.NeedAnimation)
         {
+            givingPlayer = Data.PlayerNumber - Data.myId;
+            givingPlayer = givingPlayer % Data.PlayerNumber;
             flying = Data.PlayerCardNumber * Data.PlayerNumber;
             Invoke("distribute", 0.3f);
         }
@@ -66,8 +72,7 @@ public class AllCardCon : MonoBehaviour
             {
                 for (int j = 0; j < Data.PlayerCardNumber; j++)
                 {
-                    Give(i, new int[] { Data.Cards[j + i * Data.PlayerCardNumber] });
-                    Debug.Log("person:" + i + " " + Data.Cards[j + i * Data.PlayerCardNumber]);
+                    Give(i, new int[] { Data.Cards[Data.PlayerNumber * j + (Data.myId + i) % Data.PlayerNumber] });
                 }
             }
         }
@@ -77,6 +82,7 @@ public class AllCardCon : MonoBehaviour
     {
         int card = Data.Cards[givingCard];
         cardsTrans[card].SetParent(players[givingPlayer]);
+        print("give " + givingPlayer.ToString() + " " + card.ToString());
         cardCons[card].ani = true;
         givingCard += 1;
         givingPlayer = (++givingPlayer >= Data.PlayerNumber) ? 0 : givingPlayer;
@@ -93,7 +99,8 @@ public class AllCardCon : MonoBehaviour
         if (flying > 0)
             return;
 
-        if (mId == nextPlayerCon.player)
+
+        if (mId > -1)//== Data.nowTurn)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -125,14 +132,24 @@ public class AllCardCon : MonoBehaviour
                             {
                                 Give(0, new int[] { dragingCard });
                                 CardPosition(oldParent);
+                                print("giveeeee " + dragingCard.ToString() + " " + Data.myId);
+                                gameSeverCon.giveCard(dragingCard, Data.myId);
                             }
                         }
                         //give card away
                         if (string.Equals(hitTag, "Player"))
                         {
                             int oldParent = cardCons[dragingCard].getParent();
-                            Give(hit.collider.GetComponent<OtherPlayer>().playerId, new int[] { dragingCard });
+                            int newParent = hit.collider.GetComponent<OtherPlayer>().playerId;
+                            Give(newParent, new int[] { dragingCard });
                             CardPosition(oldParent);
+
+                            int newParentGlobalId = (newParent + Data.myId) % Data.PlayerNumber;
+
+                            print("giveeeee " + dragingCard.ToString() + " " + Data.myId + " " + GameServerControll.PosToId(newParent, Data.myId, Data.PlayerNumber));
+
+                            gameSeverCon.giveCard(dragingCard, GameServerControll.PosToId(newParent, Data.myId, Data.PlayerNumber));
+                            print(GameServerControll.PosToId(newParent, Data.myId, Data.PlayerNumber));
                         }
                         //put on table
                         if (string.Equals(hitTag, "Table"))
@@ -140,12 +157,22 @@ public class AllCardCon : MonoBehaviour
                             int oldParent = cardCons[dragingCard].getParent();
                             PutOnTable(hit.point, dragingCard);
                             CardPosition(oldParent);
+                            string mesg = dragingCard.ToString() + "," + hit.point.x.ToString() + "," + hit.point.z.ToString();
+                            print("table~~~~" + mesg);
+                            gameSeverCon.putOnTable(dragingCard, hit.point.x, hit.point.z);
                         }
                     }
                     dragingCard = -1;
+
                 }
             }
         }
+    }
+
+    int NextTurn() {
+        Data.nowTurn = (++Data.nowTurn > Data.PlayerNumber) ? 0 : Data.nowTurn;
+        nextPlayerCon.turnCon.setPlayer(Data.nowTurn);
+        return Data.nowTurn;
     }
 
     public void Give(int player, int[] cards)
@@ -199,10 +226,10 @@ public class AllCardCon : MonoBehaviour
         Transform card = cardsTrans[cardId];
         card.SetParent(table);
         card.localPosition = new Vector3(point.x, 0, point.z);
-        card.rotation = Quaternion.Euler(new Vector3(-90, 0, 0));    
+        card.rotation = Quaternion.Euler(new Vector3(-90, 0, 0));
     }
 
-    public void Ask(int player){
+    public void Ask(int player) {
         askUIText.text = "玩家" + player.ToString() + "正要取走你一張牌";
         askUI.SetActive(true);
     }
@@ -225,7 +252,7 @@ public class AllCardCon : MonoBehaviour
     }
 
     public void reStart() {
-        if(mId == 0)
+        if (mId == 0)
             SceneManager.LoadScene(2);
     }
 
@@ -248,5 +275,12 @@ public class AllCardCon : MonoBehaviour
                 break;
         }
         orderUI.SetActive(false);
+    }
+
+    public void startBtn() {
+        orderUI.SetActive(false);
+        gameSeverCon.send_click();
+
+
     }
 }

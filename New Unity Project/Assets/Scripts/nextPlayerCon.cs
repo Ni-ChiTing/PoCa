@@ -11,10 +11,14 @@ public class nextPlayerCon : MonoBehaviour
     public Image[] btns;
     public EventTrigger[] btnET;
     public Text[] texts;
-    public static int player;
+
+    public static nextPlayerCon turnCon;
+
+    
     
     void Awake()
     {
+        turnCon = this;
         btns[0].sprite = playerBtn;
         for (int i = 0; i < Data.PlayerNumber; i++) {
             btns[i].enabled = true;
@@ -33,10 +37,9 @@ public class nextPlayerCon : MonoBehaviour
 
     public void setPlayer(int p)
     {
-        player = p;
         for (int i = 0; i < 4; i++) {
             btns[i].sprite = waitBtn;
         }
-        btns[player].sprite = playerBtn;
+        btns[p].sprite = playerBtn;
     }
 }

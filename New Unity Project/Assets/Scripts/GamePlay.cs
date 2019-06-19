@@ -1,9 +1,29 @@
 ﻿using System;
-using System.Collections;using System.Collections.Generic;using UnityEngine;using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 
-public class GamePlay : MonoBehaviour {    public GameObject orderUI;    public GameObject player_1;    public GameObject player_2;    public GameObject player_3;    public GameObject player_4;
+public class GamePlay : MonoBehaviour {
 
-    public Text p2_text;    public Text p3_text;    public Text p4_text;    int myID = 0;
+    public GameObject orderUI;
+    public GameObject player_1;
+    public GameObject player_2;
+    public GameObject player_3;
+    public GameObject player_4;
+
+    public Text p2_text;
+    public Text p3_text;
+    public Text p4_text;
+
+    public Text p1btn;
+    public Text p2btn;
+    public Text p3btn;
+    public Text p4btn;
+
+
+
+    int myID = 0;
 
 
     void Start() {
@@ -30,6 +50,11 @@ public class GamePlay : MonoBehaviour {    public GameObject orderUI;    publ
                 myID = i;
             }
         }
+
+        Data.myId = myID;
+        print("change my id " + myID.ToString());
+
+
         // setup player name
         try {
             if (myID == 0) {
@@ -49,7 +74,23 @@ public class GamePlay : MonoBehaviour {    public GameObject orderUI;    publ
                 p3_text.text = Data.players[0];
                 p4_text.text = Data.players[1];
             }
-        } catch (Exception e) {
-        }    }
 
-    void Update() {    }}
+        } catch (Exception e) {
+        }
+
+        try
+        {
+            p1btn.text = Data.players[0];
+            p2btn.text = Data.players[1];
+            p3btn.text = Data.players[2];
+            p4btn.text = Data.players[3];
+        }
+        catch (Exception e)
+        {
+        }
+    }
+
+    void Update() {
+
+    }
+}

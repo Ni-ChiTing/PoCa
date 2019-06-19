@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameServerControll : MonoBehaviour {
     Socket Ssocket; //socket
@@ -30,6 +31,8 @@ public class GameServerControll : MonoBehaviour {
     int recvLen;
     Thread connectThread;
 
+    int readyClient = 0;
+
     bool haveGive = false;
 
     const string TakeCard_ = "T";
@@ -42,13 +45,44 @@ public class GameServerControll : MonoBehaviour {
     const string Heart = "H";
     const string Diamond = "DI";
     const string Club = "C";
+    const string ClientGetInfoReply_ = "R";
+    const string GiveCard_ = "GC";
+    const string PutOnTable_ = "PT";
 
     UdpClient udpClient;
+
+    string lastReceive;
 
     //data.playerIP[0] is host
     //data.players[0] is host
     //card = 0 -- > 梅花 A card = 1 --> 方塊 A card == 2 --> 愛心 A card == 3 --> 黑桃 A 
     // S 黑桃 H 愛心 DI 方塊 C 梅花
+
+    public void giveCard(int cardId, int receiver) {
+        string mesg = GiveCard_ + "," + cardId.ToString() + "," + receiver.ToString();
+        print("send_give" + mesg);
+        if (Data.IamHost)
+            ServerSendAllClient(mesg);
+        else
+            ClientSendServer(mesg);
+    }
+    public void putOnTable(int card, float x, float z) {
+        string mesg = PutOnTable_ + "," + card.ToString() + "," + x.ToString() + "," + z.ToString();
+        print("send_table" + mesg);
+
+        if (Data.IamHost)
+            ServerSendAllClient(mesg);
+        else
+            ClientSendServer(mesg);
+    }
+
+    public static int PosToId( int goalPos, int viewerId, int playerNum) {
+        return (goalPos + viewerId) % playerNum;
+    }
+
+    public static int IdToPos(int goalId, int viewerId, int playerNum) {
+        return (goalId + (playerNum - viewerId)) % playerNum;
+    }
 
     public void InitServerSocket() {
         udpClient = new UdpClient();
@@ -74,7 +108,8 @@ public class GameServerControll : MonoBehaviour {
             while (true) {
                 var recvBuffer = udpClient.Receive(ref from);
                 // HERE! Do something after received data.
-                print(Encoding.UTF8.GetString(recvBuffer));
+                print("server get " + Encoding.UTF8.GetString(recvBuffer));
+                ResolveMSG(Encoding.UTF8.GetString(recvBuffer));
             }
         });
     }
@@ -357,6 +392,11 @@ public class GameServerControll : MonoBehaviour {
     }
     public void ResolveMSG(string recv) // Can Modify by you
     {
+        if (lastReceive == recv)
+            return;
+        lastReceive = recv;
+
+
         string[] r = recv.Split(',');
         print("recv " + recv);
         for (int i = 0; i < r.Length; ++i) {
@@ -382,9 +422,30 @@ public class GameServerControll : MonoBehaviour {
                     print("Get All Card");
                     UnwrapAllCard(recv);
                 }
-                else if (r[i] == Info_) {
+                else if (r[i] == Info_)
+                {
                     GetInfo(r);
-
+                }
+                else if (r[i] == ClientGetInfoReply_)
+                {
+                    if (++readyClient == Data.PlayerNumber - 1)
+                    {
+                        //Send cards
+                        ServerSendAllClient(WrapAllCard());
+                        //AllCardCon.allCardCon.StartDistribute();
+                    }
+                }
+                else if (r[i] == GiveCard_)
+                {
+                    if (Data.IamHost)
+                        ServerSendAllClient(recv);
+                    AllCardCon.allCardCon.Give(IdToPos(int.Parse(r[2]), Data.myId, Data.PlayerNumber), int.Parse(r[1]));
+                }
+                else if (r[i] == PutOnTable_)
+                {
+                    if (Data.IamHost)
+                        ServerSendAllClient(recv);
+                    AllCardCon.allCardCon.PutOnTable(new Vector3(float.Parse(r[2]), 0f, float.Parse(r[3])), int.Parse(r[1]));
                 }
             }
         }
@@ -394,9 +455,10 @@ public class GameServerControll : MonoBehaviour {
         Data.PlayerNumber = int.Parse(r[2]);
         Data.PlayerCardNumber = int.Parse(r[3]);
         Data.NeedAnimation = int.Parse(r[4]) == 1;
-        Data.NeedAnimation = int.Parse(r[5]) == 1;
+        GameObject.Find("ani_Text_Button").GetComponent<Text>().text = (Data.NeedAnimation) ? "發牌過程on" : "發牌過程off";
+        Data.NeedDrawCard = int.Parse(r[5]) == 1;
         print(AllCardCon.allCardCon.mId.ToString() + Data.PlayerNumber.ToString() + Data.PlayerCardNumber.ToString() +  Data.NeedAnimation.ToString() + Data.NeedAnimation.ToString());
-
+        ClientSendServer(ClientGetInfoReply_);
     }
     public string FindClientIP(string name) {
         int index = Data.players.IndexOf(name);
@@ -568,17 +630,17 @@ public class GameServerControll : MonoBehaviour {
         print("3");
         */
         if (Data.IamHost) {
-            //ServerSendClient(Data.playerIP[1], "SG_DATA-1");
-            //ServerSendAllClient("BC_DATA");
-            //ServerSendClient(Data.playerIP[1], "SG_DATA-2");
-            for (int i = 1; i <= Data.PlayerNumber; i++)
+            //Send info
+            for (int i = 1; i < Data.PlayerNumber; i++)
             {
                 string mesg = Info_ + "," + i.ToString() + "," + Data.PlayerNumber.ToString() + "," + Data.PlayerCardNumber.ToString() + "," +
                    ((Data.NeedAnimation) ? "1" : "0") + "," + ((Data.NeedDrawCard) ? "1" : "0");
-                print(i.ToString() + mesg);
                 ServerSendClient(Data.playerIP[i], mesg);
             }
-            AllCardCon.allCardCon.StartDistribute();
+
+            //Send cards
+            //ServerSendAllClient(WrapAllCard());
+            //AllCardCon.allCardCon.StartDistribute();
 
         } else {
             ClientSendServer("SG_DATA-1");
